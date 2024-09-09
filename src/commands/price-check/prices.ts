@@ -13,6 +13,23 @@ export default new SlashCommandBuilder()
         .setRequired(false)
     )
 
+
+const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+
+// strings joined with _ and then "GENERATOR_{level}". example "ACACIA_GENERATOR_1". transform to "Acacia I"
+function parseType(type: string) {
+    try {
+        const parts = type.split("_");
+        if (parts.length < 3) throw new Error("Invalid type on /prices's parseType. Received: " + type);
+        const level = parseInt(parts.pop()!);
+        const name = parts.slice(0, parts.length - 1).map(capitalize).join(" ");
+        return name + " " + romanise(level);
+    } catch (error) {
+        console.error("Error in parseType: ", error);
+        return type
+    }
+}
+
 function pageButtons(page: number) {
     const nextButton = new ButtonBuilder()
     .setCustomId("prices:direction:" + (page + 1))
@@ -31,25 +48,6 @@ function pageButtons(page: number) {
             );
     }
     return row;
-}
-
-
-
-
-const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-
-// strings joined with _ and then "GENERATOR_{level}". example "ACACIA_GENERATOR_1". transform to "Acacia I"
-function parseType(type: string) {
-    try {
-        const parts = type.split("_");
-        if (parts.length < 3) throw new Error("Invalid type on /prices's parseType. Received: " + type);
-        const level = parseInt(parts.pop()!);
-        const name = parts.slice(0, parts.length - 1).map(capitalize).join(" ");
-        return name + " " + romanise(level);
-    } catch (error) {
-        console.error("Error in parseType: ", error);
-        return type
-    }
 }
 
 function getMinionEmbed(minions: Awaited<ReturnType<typeof getMinionPrices>>, offset: number = 0) {
@@ -78,6 +76,8 @@ function getMinionEmbed(minions: Awaited<ReturnType<typeof getMinionPrices>>, of
     }
 }
 
+
+// bot listeners
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isCommand()) return;
     try {
