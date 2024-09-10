@@ -76,6 +76,11 @@ function getMinionEmbed(minions: Awaited<ReturnType<typeof getMinionPrices>>, of
     }
 }
 
+function filterMinions(minions: Awaited<ReturnType<typeof getMinionPrices>>, type: string) {
+    if (!minions) return null
+    return Object.entries(minions).filter(([key]) => key.startsWith(type));
+}
+
 
 // bot listeners
 client.on("interactionCreate", async (interaction) => {
@@ -86,10 +91,18 @@ client.on("interactionCreate", async (interaction) => {
         const minions = await getMinionPrices()
         if (!minions) return await interaction.reply({ content: "There was an error while fetching the prices!", ephemeral: true });
         //embed
-        const embed = getMinionEmbed(type ? { [type]: minions[type] } : minions);
+        let embed: ReturnType<typeof getMinionEmbed>;
+        if (type) {
+            const filtered = filterMinions(minions, type);
+            if (filtered === null) return await interaction.reply({ content: "No minions found from the API!", ephemeral: true });
+            if (filtered.length === 0) return await interaction.reply({ content: "No minions found with that type!", ephemeral: true });
+            embed = getMinionEmbed(Object.fromEntries(filtered));
+        } else {
+            embed = getMinionEmbed(minions);
+        }
         if (!embed) return await interaction.reply({ content: "There was an error while creating the embed!", ephemeral: true });
 
-        //@ts-ignore
+        //@ts-ignore - "components" is cooked
         return await interaction.reply({ embeds: [embed], ephemeral: true, components: !type ? [pageButtons(0)] : undefined });
     } catch (error) {
         console.error("Error in '/prices <type>' command: ", error);
