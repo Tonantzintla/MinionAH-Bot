@@ -22,19 +22,19 @@ notifications.post("/", zodParserMW(notifZod), async (req, res) => {
   if (!dm) dm = await user.createDM();
 
   const msgEmbed = new EmbedBuilder()
-    .setAuthor({
-      name: data.senderUsername,
-      iconURL: `${process.env.CLOUDINARY_URL}/image/upload/v1/users/avatars/${data.senderID}`,
-    })
-    .setTitle("Direct Message")
+    .setTitle("You have a new message")
+    .setColor("#2b2d31")
+    .setThumbnail(
+      `${process.env.CLOUDINARY_URL}/image/upload/v1/users/avatars/${data.senderID}`
+    )
     .setDescription(
-      "-# if you no longer want to receive DM's for when someone send you a message, you can turn off Discord notifications in [your notification settings](<https://minionah.com/profile/settings/notifications>)"
+      `Hello <@${data.receiverDiscordID}>,\n\n${data.senderUsername} has sent you a message on MinionAH\n-# Don't want to receive these notifications? [Manage your notification settings](<https://minionah.com/profile/settings/notifications>)`
     );
 
   const chatBtn = new ButtonBuilder({
     style: ButtonStyle.Link,
     url: `https://minionah.com/user/${data.senderUsername}/chat`,
-    label: "Open chat",
+    label: "View Message",
   });
   const btnRow = new ActionRowBuilder<ButtonBuilder>({
     components: [chatBtn],
