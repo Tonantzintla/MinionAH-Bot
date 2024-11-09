@@ -14,12 +14,12 @@ const notifications = Router();
 notifications.use(authMiddleware);
 notifications.post("/", zodParserMW(notifZod), async (req, res) => {
   const data = req.body as NotificationData;
-
-  const user = await client.users.fetch(data.receiverDiscordID);
+  const user =
+    client.users.cache.get(data.receiverDiscordID) ||
+    (await client.users.fetch(data.receiverDiscordID));
   if (!user) return res.send({});
 
-  let dm = user.dmChannel;
-  if (!dm) dm = await user.createDM();
+  let dm = user.dmChannel || (await user.createDM());
 
   const msgEmbed = new EmbedBuilder()
     .setTitle("You have a new message")
