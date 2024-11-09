@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { ActionRowBuilder, ApplicationEmoji, ButtonBuilder, ButtonStyle, ClientApplication, Collection, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { client } from "../../discord/client.js";
 import getMinionPrices from "../../lib/prices/getMinionPrices.js";
 import { romanise } from "../../lib/prices/romanise.js";
@@ -13,6 +13,7 @@ export default new SlashCommandBuilder()
         .setRequired(false)
     )
 
+const minionsPerPage = 10;
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
@@ -32,43 +33,76 @@ function parseType(type: string) {
 
 function pageButtons(page: number) {
     const nextButton = new ButtonBuilder()
-    .setCustomId("prices:direction:" + (page + 1))
-    .setLabel("Next →")
-    .setStyle(ButtonStyle.Primary)
-    let row = new ActionRowBuilder().addComponents(nextButton);
+        .setCustomId("prices:direction:" + (page + 1))
+        .setLabel("➡️")
+        .setStyle(ButtonStyle.Primary)
+    const isGoBack1Disabled = page === 0;
+    const isGoBack2Disabled = page <= 1;
+    let row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId("prices:direction:" + (page - 2))
+            .setLabel("⏪")
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(isGoBack2Disabled),
+        new ButtonBuilder()
+            .setCustomId("prices:direction:" + (page - 1))
+            .setLabel("⬅️")
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(isGoBack1Disabled),
+        new ButtonBuilder()
+        .setURL("https://minionah.com/pricecheck")
+        .setLabel("🌐")
+        .setStyle(ButtonStyle.Link),
+        nextButton,
+        new ButtonBuilder()
+            .setCustomId("prices:direction:" + (page + 2))
+            .setLabel("⏩")
+            .setStyle(ButtonStyle.Primary)
+    );
     // add previous button if page > 0
-    if (page > 0) {
-        row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId("prices:direction:" + (page - 1))
-                    .setLabel("← Previous")
-                    .setStyle(ButtonStyle.Secondary),
-                nextButton
-            );
-    }
     return row;
 }
 
-function getMinionEmbed(minions: Awaited<ReturnType<typeof getMinionPrices>>, offset: number = 0) {
+function resolveEmoji(minion: string, botEmojis: Collection<string, ApplicationEmoji>) {
+    const emoji = botEmojis.find(emoji => emoji.name === minion);
+    if (!emoji) return "<:ZOMBIE_GENERATOR_1:1284520647984152731>"
+    return `<:${minion}:${emoji?.id}>`;
+}
+
+function formatPrice(num: number): string {
+    if (num >= 1_000_000_000) {
+        return (num / 1_000_000_000).toFixed(2).replace(/\.0$/, '') + 'B';
+    } else if (num >= 1_000_000) {
+        return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+    } else if (num >= 1_000) {
+        return (num / 1_000).toFixed(0).replace(/\.0$/, '') + 'K';
+    } else {
+        return num.toFixed(0);
+    }
+}
+
+async function getMinionEmbed(minions: Awaited<ReturnType<typeof getMinionPrices>>, offset: number = 0) {
     try {
         if (!minions) throw new Error("Minions is null.");
-        const displayedEntries = Object.entries(minions).slice(offset * 10, offset * 10 + 10);
+        const botEmojis = await client.application?.emojis.fetch();
+        if (!botEmojis) throw new Error("Bot emojis not found.");
+
+        const displayedEntries = Object.entries(minions).slice(offset * minionsPerPage, offset * minionsPerPage + minionsPerPage);
         const embed = new EmbedBuilder()
+            .setColor("#2B2D31")
             .setTitle("Minion Prices")
-            .setDescription("Here are the prices for all minions.")
+            .setDescription("See the craft cost of each minion and tier so you can make the best decision when buying or selling minions.")
             .setFooter({
                 text: "By MinionAH - Showing page " + (offset + 1),
             })
-            .setColor("#00ff00")
-            .addFields(displayedEntries.map(([type, price]) => ({
-                name: `\`${parseType(type)}\``,
-                value: price.toFixed(1) + " coins",
-                inline: true,
-            })))
-            if (displayedEntries.length === 0) {
-                embed.setDescription("There are no more minions to show.");
-            }
+            .addFields([{
+                name: " ",
+                value: displayedEntries.map(([type, price]) => `${resolveEmoji(type, botEmojis)} ${parseType(type)} ~ \`${formatPrice(price)}\``).join("\n"),
+                inline: true
+            }])
+        if (displayedEntries.length === 0) {
+            embed.setDescription("There are no more minions to show.");
+        }
         return embed;
     } catch (error) {
         console.error("Error in getMinionEmbed: ", error);
@@ -91,14 +125,14 @@ client.on("interactionCreate", async (interaction) => {
         const minions = await getMinionPrices()
         if (!minions) return await interaction.reply({ content: "There was an error while fetching the prices!", ephemeral: true });
         //embed
-        let embed: ReturnType<typeof getMinionEmbed>;
+        let embed: Awaited<ReturnType<typeof getMinionEmbed>>;
         if (type) {
             const filtered = filterMinions(minions, type);
             if (filtered === null) return await interaction.reply({ content: "No minions found from the API!", ephemeral: true });
             if (filtered.length === 0) return await interaction.reply({ content: "No minions found with that type!", ephemeral: true });
-            embed = getMinionEmbed(Object.fromEntries(filtered));
+            embed = await getMinionEmbed(Object.fromEntries(filtered));
         } else {
-            embed = getMinionEmbed(minions);
+            embed = await getMinionEmbed(minions);
         }
         if (!embed) return await interaction.reply({ content: "There was an error while creating the embed!", ephemeral: true });
 
@@ -120,7 +154,7 @@ client.on("interactionCreate", async (interaction) => {
         const minions = await getMinionPrices();
         if (!minions) return await interaction.reply({ content: "There was an error while fetching the prices!", ephemeral: true });
         // embed
-        const embed = getMinionEmbed(minions, page);
+        const embed = await getMinionEmbed(minions, page);
         if (!embed) return await interaction.reply({ content: "There was an error while creating the embed!", ephemeral: true });
         //@ts-ignore
         return await interaction.update({ embeds: [embed], ephemeral: true, components: [pageButtons(page)] });
