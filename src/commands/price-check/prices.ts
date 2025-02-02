@@ -2,6 +2,7 @@ import { ActionRowBuilder, ApplicationEmoji, ButtonBuilder, ButtonStyle, ClientA
 import { client } from "../../discord/client.js";
 import getMinionPrices from "../../lib/prices/getMinionPrices.js";
 import { romanise } from "../../lib/prices/romanise.js";
+import crypto from "crypto";
 
 // init slash commands
 export default new SlashCommandBuilder()
@@ -31,44 +32,23 @@ function parseType(type: string) {
     }
 }
 
-function pageButtons(page: number) {
-    const nextButton = new ButtonBuilder()
-        .setCustomId("prices:direction:" + (page + 1))
-        .setLabel("➡️")
-        .setStyle(ButtonStyle.Primary)
-    const isGoBack1Disabled = page === 0;
-    const isGoBack2Disabled = page <= 1;
-    let row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setCustomId("prices:direction:" + (page - 2))
-            .setLabel("⏪")
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(isGoBack2Disabled),
-        new ButtonBuilder()
-            .setCustomId("prices:direction:" + (page - 1))
-            .setLabel("⬅️")
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(isGoBack1Disabled),
-        new ButtonBuilder()
-        .setURL("https://minionah.com/pricecheck")
-        .setLabel("🌐")
-        .setStyle(ButtonStyle.Link),
-        nextButton,
-        new ButtonBuilder()
-            .setCustomId("prices:direction:" + (page + 2))
-            .setLabel("⏩")
-            .setStyle(ButtonStyle.Primary)
-    );
-    // add previous button if page > 0
-    return row;
-}
-
+/**
+ * Resolves the emoji from the bot emojis
+ * @param minion the minion name
+ * @param botEmojis the bot emojis
+ * @returns the resolved emoji
+ */
 function resolveEmoji(minion: string, botEmojis: Collection<string, ApplicationEmoji>) {
     const emoji = botEmojis.find(emoji => emoji.name === minion);
     if (!emoji) return "<:ZOMBIE_GENERATOR_1:1284520647984152731>"
     return `<:${minion}:${emoji?.id}>`;
 }
 
+/**
+ * Formats a number to a string with a suffix
+ * @param num the number to format
+ * @returns the formatted number
+ */
 function formatPrice(num: number): string {
     if (num >= 1_000_000_000) {
         return (num / 1_000_000_000).toFixed(2).replace(/\.0$/, '') + 'B';
@@ -81,25 +61,36 @@ function formatPrice(num: number): string {
     }
 }
 
-async function getMinionEmbed(minions: Awaited<ReturnType<typeof getMinionPrices>>, offset: number = 0) {
+/**
+ * Creates the response embed with the minion prices
+ * @param minionPrices the prices of the minions
+ * @param offset the offset corresponding to the page
+ * @returns the embed with the minions
+ */
+async function getMinionEmbed(minionPrices: Awaited<ReturnType<typeof getMinionPrices>>, offset: number = 0) {
     try {
-        if (!minions) throw new Error("Minions is null.");
+        // if no minions, throw error
+        if (!minionPrices) throw new Error("Minions is null.");
         const botEmojis = await client.application?.emojis.fetch();
+        // if no bot emojis, throw error
         if (!botEmojis) throw new Error("Bot emojis not found.");
 
-        const displayedEntries = Object.entries(minions).slice(offset * minionsPerPage, offset * minionsPerPage + minionsPerPage);
+        // get the minions to display
+        const displayedEntries = Object.entries(minionPrices).slice(offset * minionsPerPage, offset * minionsPerPage + minionsPerPage);
+        // generate the embed
         const embed = new EmbedBuilder()
             .setColor("#2B2D31")
             .setTitle("Minion Prices")
             .setDescription("See the craft cost of each minion and tier so you can make the best decision when buying or selling minions.")
             .setFooter({
-                text: "By MinionAH - Showing page " + (offset + 1),
+                text: "By MinionAH - Showing page " + (offset + 1) + " of " + Math.ceil(Object.keys(minionPrices).length / minionsPerPage),
             })
             .addFields([{
                 name: " ",
                 value: displayedEntries.map(([type, price]) => `${resolveEmoji(type, botEmojis)} ${parseType(type)} ~ \`${formatPrice(price)}\``).join("\n"),
                 inline: true
             }])
+        // if no minions to display, set description
         if (displayedEntries.length === 0) {
             embed.setDescription("There are no more minions to show.");
         }
@@ -110,56 +101,147 @@ async function getMinionEmbed(minions: Awaited<ReturnType<typeof getMinionPrices
     }
 }
 
-function filterMinions(minions: Awaited<ReturnType<typeof getMinionPrices>>, type: string) {
-    if (!minions) return null
-    return Object.entries(minions).filter(([key]) => key.startsWith(type));
+/**
+ * Constructs pagination based on the current page number
+ * @param pageNumber the page number the user is on
+ * @param maxPages the maximum number of pages
+ * @param filter the filter the user is using - used on the custom id
+ * @returns the constructed pagination
+ */
+function constructLocalPagination(pageNumber: number, maxPages: number, filter: string = "_none") {
+    const row = new ActionRowBuilder()
+        .addComponents(
+            new ButtonBuilder()
+                .setCustomId(`price-check:prices:move-to:${pageNumber - 2}:${filter}:local`)
+                .setEmoji("⏪")
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(pageNumber -2 < 0),
+            new ButtonBuilder()
+                .setCustomId(`price-check:prices:move-to:${pageNumber - 1}:${filter}:local`)
+                .setEmoji("⬅️")
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(pageNumber - 1 < 0),
+            new ButtonBuilder()
+                .setLabel("​")
+                .setStyle(ButtonStyle.Link)
+                .setURL("https://minionah.com/pricecheck"),
+            new ButtonBuilder()
+                .setCustomId(`price-check:prices:move-to:${pageNumber + 1}:${filter}:local`)
+                .setEmoji("➡️")
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(pageNumber + 1 >= maxPages),
+            new ButtonBuilder()
+                .setCustomId(`price-check:prices:move-to:${pageNumber + 2}:${filter}:local`)
+                .setEmoji("⏩")
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(pageNumber + 2 >= maxPages),
+        )
+    return row;
 }
 
+/**
+ * Constructs secondary pagination (2nd row) based on the current page number
+ * @param pageNumber the page number the user is on
+ * @param maxPages the maximum number of pages
+ * @param filter the filter the user is using - used on the custom id
+ * @returns the constructed pagination
+ */
 
-// bot listeners
-client.on("interactionCreate", async (interaction) => {
+function constructSecondaryPagination(pageNumber: number, maxPages: number, filter: string = "_none") {
+    function constructSecondaryPaginationButton(lowLimit: number, displacement: number) {
+        const displayedPage = Math.max(pageNumber + displacement, lowLimit);
+        const directionID = `price-check:prices:move-to:${Math.max(displayedPage - 1, 0 )}:${filter}:secondary_${crypto.randomBytes(4).toString("hex")}`;
+        const label = pageNumber === lowLimit ? "🔢" : displayedPage + 1
+        return new ButtonBuilder()
+            .setCustomId(directionID)
+            .setLabel(label.toString())
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(displayedPage >= maxPages);
+
+
+    }
+    const row = new ActionRowBuilder()
+        .addComponents(
+            constructSecondaryPaginationButton(0, -2),
+            constructSecondaryPaginationButton(1, -1),
+            new ButtonBuilder()
+                .setCustomId(pageNumber < 2 ? `price-check:prices:move-to:2:${filter}:secondary` : `-`)
+                .setLabel(pageNumber < 2 ? "3" : "🔢")
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(maxPages <= 3),
+            constructSecondaryPaginationButton(3, 1),
+            constructSecondaryPaginationButton(4, 2),
+        )
+    return row;
+}
+
+/**
+ * base listener for the prices command
+ */
+client.on("interactionCreate", async interaction => {
     if (!interaction.isCommand()) return;
+    if (!(interaction.commandName === "prices")) return;
     try {
-        const type = interaction.options.get("type")?.value as string | undefined;
-        // minions
-        const minions = await getMinionPrices()
-        if (!minions) return await interaction.reply({ content: "There was an error while fetching the prices!", ephemeral: true });
-        //embed
-        let embed: Awaited<ReturnType<typeof getMinionEmbed>>;
-        if (type) {
-            const filtered = filterMinions(minions, type);
-            if (filtered === null) return await interaction.reply({ content: "No minions found from the API!", ephemeral: true });
-            if (filtered.length === 0) return await interaction.reply({ content: "No minions found with that type!", ephemeral: true });
-            embed = await getMinionEmbed(Object.fromEntries(filtered));
-        } else {
-            embed = await getMinionEmbed(minions);
-        }
-        if (!embed) return await interaction.reply({ content: "There was an error while creating the embed!", ephemeral: true });
-
-        //@ts-ignore - "components" is cooked
-        return await interaction.reply({ embeds: [embed], ephemeral: true, components: !type ? [pageButtons(0)] : undefined });
+        // get prices
+        const filter = interaction.options.get("type")?.value as string | undefined;
+        const minionPrices = await getMinionPrices(filter);
+        // if no prices, throw error
+        if (!minionPrices) throw new Error("Minion prices is null.");
+        // get page 0
+        const page = await getMinionEmbed(minionPrices);
+        // if no page, throw error
+        if (!page) throw new Error("Page is null.");
+        // send the embed
+        // @ts-ignore
+        await interaction.reply({
+            embeds: [page],
+            components: [
+                //@ts-ignore
+                constructLocalPagination(0, Math.ceil(Object.keys(minionPrices).length / minionsPerPage), filter),
+                //@ts-ignore
+                constructSecondaryPagination(0, Math.ceil(Object.keys(minionPrices).length / minionsPerPage), filter)
+            ],
+            ephemeral: true,
+        })
     } catch (error) {
-        console.error("Error in '/prices <type>' command: ", error);
-        await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+        console.error("Error in prices command: ", error);
+        await interaction.reply("An error occurred while fetching the minion prices.");
     }
 })
 
-client.on("interactionCreate", async (interaction) => {
-    // button check
+/**
+ * Page movement listener for the prices command
+ */
+client.on("interactionCreate", async interaction => {
     if (!interaction.isButton()) return;
-    if (!interaction.customId.startsWith("prices:direction:")) return;
+    if (!interaction.customId.startsWith("price-check:prices:move-to")) return;
     try {
-        const page = parseInt(interaction.customId.split(":")[2]);
-        // minions
-        const minions = await getMinionPrices();
-        if (!minions) return await interaction.reply({ content: "There was an error while fetching the prices!", ephemeral: true });
-        // embed
-        const embed = await getMinionEmbed(minions, page);
-        if (!embed) return await interaction.reply({ content: "There was an error while creating the embed!", ephemeral: true });
-        //@ts-ignore
-        return await interaction.update({ embeds: [embed], ephemeral: true, components: [pageButtons(page)] });
+        // get the page number
+        const pageNumber = parseInt(interaction.customId.split(":")[3]);
+        // get the filter
+        const filter = interaction.customId.split(":")[4];
+        // get the page
+        const minionPrices = await getMinionPrices(filter);
+        // if no prices, throw error
+        if (!minionPrices) throw new Error("Minion prices is null.");
+        // get the page
+        const page = await getMinionEmbed(minionPrices, pageNumber);
+        // if no page, throw error
+        if (!page) throw new Error("Page is null.");
+        // edit the message
+        // @ts-ignore
+        await interaction.reply({
+            embeds: [page],
+            ephemeral: true,
+            components: [
+                //@ts-ignore
+                constructLocalPagination(pageNumber, Math.ceil(Object.keys(minionPrices).length / minionsPerPage), filter),
+                //@ts-ignore
+                constructSecondaryPagination(pageNumber, Math.ceil(Object.keys(minionPrices).length / minionsPerPage), filter)
+            ]
+        })
     } catch (error) {
-        console.error("Error in '/prices <type>' command: ", error);
-        await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+        console.error("Error in prices command: ", error);
+        await interaction.reply("An error occurred while fetching the minion prices.");
     }
 })
