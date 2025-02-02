@@ -10,7 +10,7 @@ export default async function getMinionPrices(filter?: string): Promise<MinionPr
         const {data: minions} = await axios.get<MinionPrices>(process.env.PRICE_CHECKER_URL, {
             timeout: 15000
         });
-        return filter ? Object.fromEntries(Object.entries(minions).filter(([key]) => key.toLowerCase().includes(filter.toLowerCase()))) : minions;
+        return filter && filter !== "_none" ? Object.fromEntries(Object.entries(minions).filter(([key]) => key.toLowerCase().includes(filter.toLowerCase()))) : minions;
     } catch (error) {
         console.error("Error in getMinionPrices: ", error);
         return null

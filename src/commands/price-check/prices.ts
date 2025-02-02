@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ApplicationEmoji, ButtonBuilder, ButtonStyle, ClientApplication, Collection, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { ActionRowBuilder, ApplicationEmoji, ButtonBuilder, ButtonStyle, ClientApplication, Collection, ComponentType, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { client } from "../../discord/client.js";
 import getMinionPrices from "../../lib/prices/getMinionPrices.js";
 import { romanise } from "../../lib/prices/romanise.js";
@@ -112,12 +112,12 @@ function constructLocalPagination(pageNumber: number, maxPages: number, filter: 
     const row = new ActionRowBuilder()
         .addComponents(
             new ButtonBuilder()
-                .setCustomId(`price-check:prices:move-to:${pageNumber - 2}:${filter}:local`)
+                .setCustomId(`price-check:prices:move-to:${pageNumber - 2}:${filter}:local:${crypto.randomBytes(6).toString("hex")}`)
                 .setEmoji("⏪")
                 .setStyle(ButtonStyle.Primary)
                 .setDisabled(pageNumber -2 < 0),
             new ButtonBuilder()
-                .setCustomId(`price-check:prices:move-to:${pageNumber - 1}:${filter}:local`)
+                .setCustomId(`price-check:prices:move-to:${pageNumber - 1}:${filter}:local:${crypto.randomBytes(6).toString("hex")}`)
                 .setEmoji("⬅️")
                 .setStyle(ButtonStyle.Primary)
                 .setDisabled(pageNumber - 1 < 0),
@@ -126,12 +126,12 @@ function constructLocalPagination(pageNumber: number, maxPages: number, filter: 
                 .setStyle(ButtonStyle.Link)
                 .setURL("https://minionah.com/pricecheck"),
             new ButtonBuilder()
-                .setCustomId(`price-check:prices:move-to:${pageNumber + 1}:${filter}:local`)
+                .setCustomId(`price-check:prices:move-to:${pageNumber + 1}:${filter}:local:${crypto.randomBytes(6).toString("hex")}`)
                 .setEmoji("➡️")
                 .setStyle(ButtonStyle.Primary)
                 .setDisabled(pageNumber + 1 >= maxPages),
             new ButtonBuilder()
-                .setCustomId(`price-check:prices:move-to:${pageNumber + 2}:${filter}:local`)
+                .setCustomId(`price-check:prices:move-to:${pageNumber + 2}:${filter}:local:${crypto.randomBytes(6).toString("hex")}`)
                 .setEmoji("⏩")
                 .setStyle(ButtonStyle.Primary)
                 .setDisabled(pageNumber + 2 >= maxPages),
@@ -150,10 +150,10 @@ function constructLocalPagination(pageNumber: number, maxPages: number, filter: 
 function constructSecondaryPagination(pageNumber: number, maxPages: number, filter: string = "_none") {
     function constructSecondaryPaginationButton(lowLimit: number, displacement: number) {
         const displayedPage = Math.max(pageNumber + displacement, lowLimit);
-        const directionID = `price-check:prices:move-to:${Math.max(displayedPage - 1, 0 )}:${filter}:secondary_${crypto.randomBytes(4).toString("hex")}`;
+        const directionID = `price-check:prices:move-to:${Math.max(displayedPage - 1, 0 )}:${filter}:secondary:${crypto.randomBytes(6).toString("hex")}`;
         const label = pageNumber === lowLimit ? "🔢" : displayedPage + 1
         return new ButtonBuilder()
-            .setCustomId(directionID)
+            .setCustomId(pageNumber === lowLimit ? `price-check:prices:paginationModal:${filter}:secondary:${crypto.randomBytes(6).toString("hex")}` : directionID)
             .setLabel(label.toString())
             .setStyle(ButtonStyle.Primary)
             .setDisabled(displayedPage >= maxPages);
@@ -165,7 +165,7 @@ function constructSecondaryPagination(pageNumber: number, maxPages: number, filt
             constructSecondaryPaginationButton(0, -2),
             constructSecondaryPaginationButton(1, -1),
             new ButtonBuilder()
-                .setCustomId(pageNumber < 2 ? `price-check:prices:move-to:2:${filter}:secondary` : `-`)
+                .setCustomId(pageNumber < 2 ? `price-check:prices:move-to:2:${filter}:secondary:${crypto.randomBytes(6).toString("hex")}` : `price-check:prices:paginationModal:${filter}:secondary:${crypto.randomBytes(6).toString("hex")}`)
                 .setLabel(pageNumber < 2 ? "3" : "🔢")
                 .setStyle(ButtonStyle.Primary)
                 .setDisabled(maxPages <= 3),
@@ -183,7 +183,7 @@ client.on("interactionCreate", async interaction => {
     if (!(interaction.commandName === "prices")) return;
     try {
         // get prices
-        const filter = interaction.options.get("type")?.value as string | undefined;
+        const filter = (interaction.options.get("type")?.value as string | undefined) ?? "_none";
         const minionPrices = await getMinionPrices(filter);
         // if no prices, throw error
         if (!minionPrices) throw new Error("Minion prices is null.");
@@ -205,7 +205,10 @@ client.on("interactionCreate", async interaction => {
         })
     } catch (error) {
         console.error("Error in prices command: ", error);
-        await interaction.reply("An error occurred while fetching the minion prices.");
+        await interaction.reply({
+            content: "An error occurred while fetching the minion prices.",
+            ephemeral: true
+        });
     }
 })
 
@@ -230,7 +233,7 @@ client.on("interactionCreate", async interaction => {
         if (!page) throw new Error("Page is null.");
         // edit the message
         // @ts-ignore
-        await interaction.reply({
+        await interaction.update({
             embeds: [page],
             ephemeral: true,
             components: [
@@ -242,6 +245,100 @@ client.on("interactionCreate", async interaction => {
         })
     } catch (error) {
         console.error("Error in prices command: ", error);
-        await interaction.reply("An error occurred while fetching the minion prices.");
+        await interaction.reply({
+            content: "An error occurred while fetching the minion prices.",
+            ephemeral: true
+        });
+    }
+})
+
+/**
+ * Pagination modal listener for the prices command
+ */
+client.on("interactionCreate", async interaction => {
+    if (!interaction.isButton()) return;
+    if (!interaction.customId.startsWith("price-check:prices:paginationModal") || !interaction.customId.includes(":secondary")) return;
+    try {
+        // get the filter
+        const filter = interaction.customId.split(":")[3];
+        // get the prices
+        const minionPrices = await getMinionPrices(filter);
+        // if no prices, throw error
+        if (!minionPrices) throw new Error("Minion prices is null.");
+        // open modal
+        await interaction.showModal({
+            title: 'Jump to page',
+            customId: 'price-check:prices:paginationModal_instance:' + filter + ":" + crypto.randomBytes(6).toString("hex"),
+            components: [
+                {
+                    type: 1,
+                    components: [
+                        {
+                            type: ComponentType.TextInput,
+                            customId: 'price-check:prices:paginationModal_instance:pageInput',
+                            label: 'Page Number',
+                            style: 1, // Short
+                            placeholder: 'Type the page number you want to jump to',
+                            required: true,
+                        },
+                    ],
+                },
+            ],
+        });
+        return
+    } catch (error) {
+        console.error("Error in prices command: ", error);
+        await interaction.reply({
+            content: "An error occurred while fetching the minion prices.",
+            ephemeral: true
+        });
+    }
+})
+
+/**
+ * Pagination modal instance listener for the prices command
+ */
+client.on("interactionCreate", async interaction => {
+    if (!interaction.isModalSubmit()) return;
+    if (!interaction.customId.startsWith("price-check:prices:paginationModal_instance")) return;
+    try {
+        // get the page number
+        const pageNumber = parseInt(interaction.fields.getTextInputValue("price-check:prices:paginationModal_instance:pageInput"));
+        // get the filter
+        const filter = interaction.customId.split(":")[3];
+        // get the prices
+        const minionPrices = await getMinionPrices(filter);
+        // if no prices, throw error
+        if (!minionPrices) throw new Error("Minion prices is null.");
+        // if page is invalid, throw error
+        if (pageNumber < 1 || pageNumber > Math.ceil(Object.keys(minionPrices).length / minionsPerPage)) {
+            await interaction.reply({
+                content: "Invalid page number. Please try again.",
+                ephemeral: true
+            });
+            return
+        }
+        // get the page
+        const page = await getMinionEmbed(minionPrices, pageNumber - 1);
+        // if no page, throw error
+        if (!page) throw new Error("Page is null.");
+        // edit the message
+        // @ts-ignore
+        await interaction.reply({
+            embeds: [page],
+            ephemeral: true,
+            components: [
+                //@ts-ignore
+                constructLocalPagination(pageNumber - 1, Math.ceil(Object.keys(minionPrices).length / minionsPerPage), filter),
+                //@ts-ignore
+                constructSecondaryPagination(pageNumber - 1, Math.ceil(Object.keys(minionPrices).length / minionsPerPage), filter)
+            ]
+        })
+    } catch (error) {
+        console.error("Error in prices command: ", error);
+        await interaction.reply({
+            content: "An error occurred while fetching the minion prices.",
+            ephemeral: true
+        });
     }
 })
