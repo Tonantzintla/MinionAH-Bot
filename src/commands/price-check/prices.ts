@@ -3,6 +3,8 @@ import { client } from "../../discord/client.js";
 import getMinionPrices from "../../lib/prices/getMinionPrices.js";
 import { romanise } from "../../lib/prices/romanise.js";
 import crypto from "crypto";
+import resolveMinionEmoji from "../../lib/resolveMinionEmoji.js";
+import parseMinionType from "../../lib/auctions/parseMinionType.js";
 
 // init slash commands
 export default new SlashCommandBuilder()
@@ -19,35 +21,9 @@ export default new SlashCommandBuilder()
         .setRequired(false)
     )
 
-const minionsPerPage = 10;
+const minionsPerPage = 10
 
-const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
-// strings joined with _ and then "GENERATOR_{level}". example "ACACIA_GENERATOR_1". transform to "Acacia I"
-function parseType(type: string) {
-    try {
-        const parts = type.split("_");
-        if (parts.length < 3) throw new Error("Invalid type on /prices's parseType. Received: " + type);
-        const level = parseInt(parts.pop()!);
-        const name = parts.slice(0, parts.length - 1).map(capitalize).join(" ");
-        return name + " " + romanise(level);
-    } catch (error) {
-        console.error("Error in parseType: ", error);
-        return type
-    }
-}
-
-/**
- * Resolves the emoji from the bot emojis
- * @param minion the minion name
- * @param botEmojis the bot emojis
- * @returns the resolved emoji
- */
-function resolveEmoji(minion: string, botEmojis: Collection<string, ApplicationEmoji>) {
-    const emoji = botEmojis.find(emoji => emoji.name === minion);
-    if (!emoji) return "<:ZOMBIE_GENERATOR_1:1284520647984152731>"
-    return `<:${minion}:${emoji?.id}>`;
-}
 
 /**
  * Formats a number to a string with a suffix
@@ -92,7 +68,7 @@ async function getMinionEmbed(minionPrices: Awaited<ReturnType<typeof getMinionP
             })
             .addFields([{
                 name: " ",
-                value: displayedEntries.map(([type, price]) => `${resolveEmoji(type, botEmojis)} ${parseType(type)} ~ \`${formatPrice(price)}\``).join("\n"),
+                value: displayedEntries.map(([type, price]) => `${resolveMinionEmoji(type, botEmojis)} ${parseMinionType(type)} ~ \`${formatPrice(price)}\``).join("\n"),
                 inline: true
             }])
         // if no minions to display, set description
@@ -352,3 +328,4 @@ client.on("interactionCreate", async interaction => {
         });
     }
 })
+
