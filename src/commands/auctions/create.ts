@@ -6,6 +6,7 @@ import getMinionTypes from "../../lib/auctions/getMinionTypes.js";
 import getSubcommand from "../../lib/getSubcommand.js";
 import resolveMinionEmoji from "../../lib/resolveMinionEmoji.js";
 import { Auction } from "../../lib/types/auction.js";
+import validatePlaintextMinionType from "../../lib/minions/validateSelectedMinionType.js";
 
 interface AuctionCreationBody {
     discordID: string;
@@ -60,24 +61,7 @@ export default new SlashCommandSubcommandBuilder()
             .setRequired(false)
     )
 
-async function validateSelectedMinionType(type: string, tier: number) {
-    try {
-        const minionIDs = await getMinionTypes(true); // returns raw minion types
-        if (!minionIDs) throw new Error("No minion types found");
-        const validMinionIDs = minionIDs.filter(ID => ID.includes(type.toUpperCase()) && ID.split("_").slice(-1)[0] === tier.toString())
-        return {
-            systemError: false,
-            valid: validMinionIDs.length === 1,
-            validMinionID: validMinionIDs[0]
-        }
-    } catch (error) {
-        console.error(error);
-        return {
-            valid: false,
-            systemError: true
-        }
-    }
-}
+
 
 // base listener
 client.on("interactionCreate", async interaction => {
@@ -95,7 +79,7 @@ client.on("interactionCreate", async interaction => {
             freeWill: interaction.options.get("free_will", false)?.value as boolean ?? false
         }
 
-        const minionTypeValidation = await validateSelectedMinionType(opts.type, opts.tier);
+        const minionTypeValidation = await validatePlaintextMinionType(opts.type, opts.tier);
         if (minionTypeValidation.systemError) throw new Error("An error occurred while validating the minion type. Please try again later.");
 
         const validations = {
@@ -143,6 +127,7 @@ client.on("interactionCreate", async interaction => {
 
         // create embed
         const embed = new EmbedBuilder()
+            .setColor("#2B2D31")
             .setTitle("🟠 Auction Summary")
             .setDescription(`You are about to create an auction. Please review the details below and confirm your action.
                 \n**Note:** This embed will be active for only the next hour`)
@@ -180,43 +165,6 @@ client.on("interactionCreate", async interaction => {
         console.error(error);
         const e = error as Error;
         await interaction.reply({ content: e.message, ephemeral: true });
-    }
-})
-
-// autocomplete listener for minion_type
-client.on("interactionCreate", async interaction => {
-    try {
-        // check for autocomplete interaction and correct command
-        if (!interaction.isAutocomplete()) return;
-        if (interaction.commandName !== "auctions" || getSubcommand(interaction) !== "create") return;
-        // get focused option
-        const focused = interaction.options.getFocused(true);
-        if (!focused || focused.name !== "minion_type") return;
-        // fetch minion types
-        const minionTypes = await getMinionTypes();
-        if (!minionTypes) {
-            await interaction.respond([])
-            return
-        }
-        // get filter
-        const val = interaction.options.getString("minion_type") as string; // is required
-        // len == 0 -> return first five
-        if (val.length === 0) return await interaction.respond(
-            minionTypes.slice(0, 5).map(minionType => ({
-                name: minionType,
-                value: minionType.toLowerCase()
-            }))
-        )
-        // filter
-        const filtered = minionTypes.filter(minionType => minionType.toLowerCase().includes(val.toLowerCase()));
-        await interaction.respond(
-            filtered.slice(0, 5).map(minionType => ({
-                name: minionType,
-                value: minionType.toLowerCase()
-            }))
-        )
-    } catch (error) {
-        console.error(error);
     }
 })
 

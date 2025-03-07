@@ -2,6 +2,7 @@ import express from "express";
 import "./central.config.js";
 import applySlashCommands from "./discord/applySlashCommands.js";
 import { client } from "./discord/client.js";
+import "./global-listeners/imports.js"
 import authMiddleware from "./rest/middleware/auth.js";
 import rootRouter from "./rest/rootRouter.js";
 

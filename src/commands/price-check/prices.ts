@@ -5,6 +5,7 @@ import { romanise } from "../../lib/prices/romanise.js";
 import crypto from "crypto";
 import resolveMinionEmoji from "../../lib/resolveMinionEmoji.js";
 import parseMinionType from "../../lib/auctions/parseMinionType.js";
+import formatMinionPrice from "../../lib/prices/formatMinionPrice.js";
 
 // init slash commands
 export default new SlashCommandBuilder()
@@ -22,25 +23,6 @@ export default new SlashCommandBuilder()
     )
 
 const minionsPerPage = 10
-
-
-
-/**
- * Formats a number to a string with a suffix
- * @param num the number to format
- * @returns the formatted number
- */
-function formatPrice(num: number): string {
-    if (num >= 1_000_000_000) {
-        return (num / 1_000_000_000).toFixed(2).replace(/\.0$/, '') + 'B';
-    } else if (num >= 1_000_000) {
-        return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
-    } else if (num >= 1_000) {
-        return (num / 1_000).toFixed(0).replace(/\.0$/, '') + 'K';
-    } else {
-        return num.toFixed(0);
-    }
-}
 
 /**
  * Creates the response embed with the minion prices
@@ -68,7 +50,7 @@ async function getMinionEmbed(minionPrices: Awaited<ReturnType<typeof getMinionP
             })
             .addFields([{
                 name: " ",
-                value: displayedEntries.map(([type, price]) => `${resolveMinionEmoji(type, botEmojis)} ${parseMinionType(type)} ~ \`${formatPrice(price)}\``).join("\n"),
+                value: displayedEntries.map(([type, price]) => `${resolveMinionEmoji(type, botEmojis)} ${parseMinionType(type)} ~ \`${formatMinionPrice(price)}\``).join("\n"),
                 inline: true
             }])
         // if no minions to display, set description

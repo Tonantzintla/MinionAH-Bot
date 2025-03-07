@@ -7,4 +7,6 @@ export namespace Auction {
         mithrilInfused: boolean;
         freeWill: boolean;
     }
+
+    interface FetchedAuctionData {}
 }
