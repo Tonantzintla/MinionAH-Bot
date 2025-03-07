@@ -191,7 +191,7 @@ client.on("interactionCreate", async interaction => {
                 }
                 console.log(auctionBodyMapped);
                 await interaction.reply({ content: "Auction confirmed!", ephemeral: true });
-                // todo: send to API
+                // TODO: send to API
                 break;
             case "cancel":
                 await interaction.reply({ content: "Auction cancelled!", ephemeral: true });

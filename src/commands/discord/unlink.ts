@@ -51,7 +51,7 @@ client.on("interactionCreate", async interaction => {
             return
         }
         
-        // todo: implement unlinking process, send request to the API
+        // TODO: implement unlinking process, send request to the API
 
         const responseEmbed = new EmbedBuilder()
             .setTitle("✅ Unlinking Process Completed ")

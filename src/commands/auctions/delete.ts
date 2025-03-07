@@ -22,7 +22,7 @@ const repeatArray = <T>(array: T[], times: number): T[] => {
 }
 
 async function getAuctions(discordID: string): Promise<AuctionDeletionOptions[]> {
-    // todo
+    // TODO
     return repeatArray(
         [
             {
