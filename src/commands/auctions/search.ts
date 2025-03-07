@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, SlashCommandSubcommandBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, InteractionResponse, SlashCommandSubcommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import { Auction } from "../../lib/types/auction.js";
 import { client } from "../../discord/client.js";
 import getSubcommand from "../../lib/getSubcommand.js";
@@ -19,6 +19,13 @@ interface DisplayableAuctions {
         tier: number;
         fullType: string;
     }
+}
+
+interface PersistentSearchData {
+    page: number;
+    minionType?: string;
+    minionTier?: number;
+    sorting?: "asc" | "desc";
 }
 
 const commandParams = {
@@ -98,6 +105,7 @@ async function getAuctions(page: number, {
 }): Promise<{
     auctions: DisplayableAuctions[]
     minionSum: number
+    totalAuctions: number
 }> {
     // get auctions from API
     const auctions: Auction.FetchedAuctionData[] = []
@@ -113,13 +121,15 @@ async function getAuctions(page: number, {
     }
     return {
         auctions: mutated.slice(page * commandParams.auctionsPerPage, (page + 1) * commandParams.auctionsPerPage),
-        minionSum: 0
+        minionSum: 0,
+        totalAuctions: mutated.length
     }
 }
 
-async function makeEmbed(page: number, { minionType, minionTier }: { minionType?: string, minionTier?: number }): Promise<{
+async function makeEmbed(page: number, { minionType, minionTier, sorting }: { minionType?: string, minionTier?: number, sorting?: "asc" | "desc" }): Promise<{
     embed: EmbedBuilder,
-    auctions: DisplayableAuctions[]
+    auctions: DisplayableAuctions[],
+    totalAuctions: number
 } | null> {
     try {
         // fetch bot emojis for decoding
@@ -127,7 +137,16 @@ async function makeEmbed(page: number, { minionType, minionTier }: { minionType?
         if (!botEmojis) return null
 
         // fetch auctions
-        const { auctions, minionSum } = await getAuctions(page, { minionType, minionTier });
+        const { auctions, minionSum, totalAuctions } = await getAuctions(page, { minionType, minionTier });
+
+        switch (sorting) {
+            case "asc":
+                auctions.sort((a, b) => a.price - b.price)
+                break;
+            case "desc":
+                auctions.sort((a, b) => b.price - a.price)
+                break;
+        }
 
         // for clarity, define the fields for the description
         const descriptionFields = [
@@ -155,9 +174,9 @@ async function makeEmbed(page: number, { minionType, minionTier }: { minionType?
                 inline: true
             })))
             .setFooter({
-                text: `By MinionAH. Showing page 1 of ${Math.ceil(auctions.length / commandParams.auctionsPerPage)}`
+                text: `By MinionAH. Showing page ${page + 1} of ${Math.ceil(totalAuctions / commandParams.auctionsPerPage)}`
             })
-        return { embed, auctions }
+        return { embed, auctions, totalAuctions }
     } catch (error) {
         console.error(error);
         return null;
@@ -172,18 +191,79 @@ function makePagination(currentPage: number, totalAuctions: number) {
                 .setLabel("⬅️ Previous Page")
                 .setStyle(ButtonStyle.Primary)
                 .setDisabled(currentPage === 0)
-                .setCustomId(`auctions:search:previous-page`),
+                .setCustomId(`auctions:search:page:previous`),
             new ButtonBuilder()
                 .setLabel("🔢 Go to Page")
                 .setStyle(ButtonStyle.Secondary)
-                .setCustomId(`auctions:search:go-to-page`),
+                .setCustomId(`auctions:search:page:go-to`),
             new ButtonBuilder()
-                .setLabel("➡️ Next Page")
+                .setLabel("Next Page ➡️")
                 .setStyle(ButtonStyle.Primary)
                 .setDisabled(currentPage === numPages - 1)
-                .setCustomId(`auctions:search:next-page`)
-            )
-        
+                .setCustomId(`auctions:search:page:next`)
+        )
+
+}
+
+function makeStringSelect(currentSorting?: "asc" | "desc") {
+    const options = [
+        new StringSelectMenuOptionBuilder()
+            .setLabel("Ascending")
+            .setValue("asc")
+            .setDefault(currentSorting === "asc")
+            .setDescription("Sort the auctions in ascending order")
+            .setEmoji("⬆️"),
+        new StringSelectMenuOptionBuilder()
+            .setLabel("Descending")
+            .setValue("desc")
+            .setDefault(currentSorting === "desc")
+            .setDescription("Sort the auctions in descending order")
+            .setEmoji("⬇️"),
+    ]
+    return new ActionRowBuilder<StringSelectMenuBuilder>()
+        .addComponents(
+            new StringSelectMenuBuilder()
+                .setCustomId("auctions:search:sort")
+                .setPlaceholder("Select the sorting order")
+                .addOptions(options)
+                .setMaxValues(1)
+                .setMinValues(1)
+        )
+}
+
+function applyCollectorToStringSelect(reply: InteractionResponse<boolean>) {
+    try {
+        const collector = reply.createMessageComponentCollector({
+            componentType: ComponentType.StringSelect,
+            filter: (interaction) => interaction.customId === "auctions:search:sort"
+        })
+
+        collector.on("collect", async interaction => {
+            const sorting = interaction.values[0] as "asc" | "desc"
+            const data = kv.get<PersistentSearchData>(`auctions:search:${interaction.user.id}`)
+            const page = data?.page ?? 0
+            const embedInstance = await makeEmbed(page, {
+                minionType: data?.minionType,
+                minionTier: data?.minionTier,
+                sorting
+            });
+
+            if (!embedInstance) {
+                await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+                return
+            }
+
+            const { embed, totalAuctions } = embedInstance
+
+            const pagination = makePagination(page, totalAuctions)
+
+            kv.set<PersistentSearchData>(`auctions:search:${interaction.user.id}`, { page, minionType: data?.minionType, minionTier: data?.minionTier, sorting })
+
+            await interaction.update({ embeds: [embed], components: [pagination, makeStringSelect(sorting)], });
+        })
+    } catch (error) {
+        console.error(error)
+    }
 }
 
 /**
@@ -209,13 +289,128 @@ client.on("interactionCreate", async interaction => {
             return
         }
 
-        const {embed, auctions} = embedInstance
+        const { embed, totalAuctions } = embedInstance
 
-        const pagination = makePagination(0, auctions.length)
-        kv.set(`auctions:search:${interaction.user.id}`, { page: 0, minionType, minionTier })
-        await interaction.reply({ embeds: [embed], components: [pagination], ephemeral: true });
+        const pagination = makePagination(0, totalAuctions)
+        kv.set<PersistentSearchData>(`auctions:search:${interaction.user.id}`, { page: 0, minionType, minionTier })
+        const reply = await interaction.reply({ embeds: [embed], components: [pagination, makeStringSelect()], ephemeral: true });
+        applyCollectorToStringSelect(reply)
     } catch (error) {
         console.error(error);
         await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
     }
 });
+
+/**
+ * Event handler for pagination buttons
+ */
+client.on("interactionCreate", async interaction => {
+    if (!interaction.isButton()) return;
+    if (!interaction.customId.startsWith("auctions:search:page")) return;
+    try {
+        const action = interaction.customId.split(":")[3] as "previous" | "next" | "go-to";
+        const user = interaction.user.id;
+        const data = kv.get<PersistentSearchData>(`auctions:search:${user}`);
+        let page = data?.page ?? 0;
+        switch (action) {
+            case "previous":
+                page--;
+                break;
+            case "next":
+                page++;
+                break;
+            case "go-to":
+                await interaction.showModal({
+                    title: "Jump to Page",
+                    customId: "auctions:search:page:jump",
+                    components: [
+                        {
+                            type: ComponentType.ActionRow,
+                            components: [
+                                new TextInputBuilder()
+                                    .setCustomId("auctions:search:page:jump-input")
+                                    .setLabel("Page Number")
+                                    .setStyle(TextInputStyle.Short)
+                                    .setPlaceholder("Type the page number")
+                                    .setRequired(true)
+                            ]
+                        }
+                    ]
+                })
+                return;
+        }
+        console.log(page)
+        const embedInstance = await makeEmbed(page, {
+            minionType: data?.minionType,
+            minionTier: data?.minionTier,
+            sorting: data?.sorting
+        });
+
+        if (!embedInstance) {
+            await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+            return
+        }
+
+        const { embed, totalAuctions } = embedInstance
+
+        const pagination = makePagination(page, totalAuctions)
+
+        kv.set<PersistentSearchData>(`auctions:search:${user}`, {
+            page,
+            minionType: data?.minionType,
+            minionTier: data?.minionTier,
+            sorting: data?.sorting
+        })
+        const reply = await interaction.update({ embeds: [embed], components: [pagination, makeStringSelect(data?.sorting)] });
+        applyCollectorToStringSelect(reply)
+    } catch (error) {
+        console.error(error);
+        await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+    }
+})
+
+/**
+ * Event handler for the jump to page modal
+ */
+client.on("interactionCreate", async interaction => {
+    if (!interaction.isModalSubmit()) return;
+    if (!interaction.customId.startsWith("auctions:search:page:jump")) return;
+    try {
+        // get the page number
+        const page = parseInt(interaction.fields.getTextInputValue("auctions:search:page:jump-input")) - 1;
+        if (isNaN(page)) {
+            await interaction.reply({ content: "Invalid page number!", ephemeral: true });
+            return
+        }
+        // get the user
+        const user = interaction.user.id
+        const data = kv.get<PersistentSearchData>(`auctions:search:${user}`)
+
+        const embedInstance = await makeEmbed(page, {
+            minionType: data?.minionType,
+            minionTier: data?.minionTier
+        });
+
+        if (!embedInstance) {
+            await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+            return
+        }
+
+        const { embed, totalAuctions } = embedInstance
+
+        const pagination = makePagination(page, totalAuctions)
+
+        kv.set<PersistentSearchData>(`auctions:search:${user}`, {
+            page,
+            minionType: data?.minionType,
+            minionTier: data?.minionTier,
+            sorting: data?.sorting
+        })
+
+        const reply = await interaction.reply({ embeds: [embed], components: [pagination, makeStringSelect()], ephemeral: true });
+        applyCollectorToStringSelect(reply)
+    } catch (error) {
+        console.error(error);
+        await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+    }
+})
