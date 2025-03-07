@@ -13,7 +13,7 @@ interface DisplayableAuctions {
     price: number;
     amount: number;
     created: number; // timestamp
-    lastBumped: number; // timestamp
+    lastBumped: number | null; // timestamp
     // stuff used on the backend
     system: {
         tier: number;
@@ -159,8 +159,8 @@ async function makeEmbed(page: number, { minionType, minionTier, sorting }: { mi
             `Price: **${formatMinionPrice(action.price)}**`,
             `Amount: **${action.amount}**`,
             `Created: ${`<t:${Math.floor(action.created / 1000)}:R>`}`,
-            `Last Bumped: ${`<t:${Math.floor(action.lastBumped / 1000)}:R>`}`
-        ]
+            action.lastBumped ? `Last Bumped: ${`<t:${Math.floor(action.lastBumped / 1000)}:R>`}` : null
+        ].filter(Boolean)
 
         // construct the embed
         const embed = new EmbedBuilder()
