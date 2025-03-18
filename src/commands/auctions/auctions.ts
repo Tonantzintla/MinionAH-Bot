@@ -6,6 +6,6 @@ import search from "./search.js";
 export default new SlashCommandBuilder()
     .setName("auctions")
     .setDescription("Actions on auctions")
-    .addSubcommand(create)
+    // .addSubcommand(create)
     // .addSubcommand(_delete)
     .addSubcommand(search)

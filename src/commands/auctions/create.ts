@@ -1,6 +1,6 @@
 import assert from "assert";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, SlashCommandSubcommandBuilder } from "discord.js";
-import { kv } from "../../central.config.js";
+import { kv, prisma } from "../../central.config.js";
 import { client } from "../../discord/client.js";
 import getMinionTypes from "../../lib/auctions/getMinionTypes.js";
 import getSubcommand from "../../lib/getSubcommand.js";
@@ -192,6 +192,7 @@ client.on("interactionCreate", async interaction => {
                 console.log(auctionBodyMapped);
                 await interaction.reply({ content: "Auction confirmed!", ephemeral: true });
                 // TODO: send to API
+                
                 break;
             case "cancel":
                 await interaction.reply({ content: "Auction cancelled!", ephemeral: true });

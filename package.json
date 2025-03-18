@@ -3,11 +3,13 @@
   "type": "module",
   "version": "0.0.1",
   "dependencies": {
+    "@prisma/client": "^6.5.0",
     "axios": "^1.7.7",
     "discord.js": "^14.16.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "node-cache": "^5.1.2",
+    "prisma": "^6.5.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -16,7 +18,7 @@
     "typescript": "^5.5.4"
   },
   "scripts": {
-    "build-run": "pnpm exec tsc && node ./dist",
-    "dev": "pnpm exec nodemon -e ts --watch 'src/**/*.ts' --exec 'pnpm run build-run'"
+    "prod": "bun ./src",
+    "dev": "bunx nodemon -e ts --watch 'src/**/*.ts' --exec 'bun ./src'"
   }
 }

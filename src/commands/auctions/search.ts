@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, InteractionResponse, SlashCommandSubcommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, InteractionResponse, MessageFlags, SlashCommandSubcommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import { Auction } from "../../lib/types/auction.js";
 import { client } from "../../discord/client.js";
 import getSubcommand from "../../lib/getSubcommand.js";
@@ -6,13 +6,16 @@ import formatMinionPrice from "../../lib/prices/formatMinionPrice.js";
 import resolveMinionEmoji from "../../lib/resolveMinionEmoji.js";
 import parseMinionType from "../../lib/auctions/parseMinionType.js";
 import auctions from "./auctions.js";
-import { kv } from "../../central.config.js";
+import { kv, prisma } from "../../central.config.js";
+import { Auction as PrismaAuction } from "@prisma/client";
+import deromanise from "../../lib/prices/deromanise.js";
+import { romanise } from "../../lib/prices/romanise.js";
 
 interface DisplayableAuctions {
     minionType: string; // parsed: plaintext-displayable
     price: number;
     amount: number;
-    created: number; // timestamp
+    createdAt: number; // timestamp
     lastBumped: number | null; // timestamp
     // stuff used on the backend
     system: {
@@ -53,42 +56,22 @@ export default new SlashCommandSubcommandBuilder()
             ])
     )
 
-// TODO: remove this - just for mockup
-function generateAuctionData(count: number): DisplayableAuctions[] {
-    const minionTypes = [
-        "Cobblestone Minion", "Iron Minion", "Gold Minion", "Diamond Minion",
-        "Lapis Minion", "Redstone Minion", "Emerald Minion", "Quartz Minion",
-        "Obsidian Minion", "Glowstone Minion", "Gravel Minion", "Sand Minion"
-    ];
-
-    const auctions: DisplayableAuctions[] = [];
-    for (let i = 0; i < count; i++) {
-        const minionType = minionTypes[Math.floor(Math.random() * minionTypes.length)];
-        const price = Math.floor(Math.random() * 10000) + 1000; // Random price between 1000 and 10999
-        const created = Date.now() - Math.floor(Math.random() * 1000000000); // Random timestamp within the last ~11.5 days
-        const tier = Math.floor(Math.random() * 12) + 1; // Random tier between 1 and 12
-        const amount = Math.floor(Math.random() * 64) + 1; // Random amount between 1 and 64
-        const lastBumped = Date.now() - Math.floor(Math.random() * 1000000000); // Random timestamp within the last ~11.5 days
-
-        auctions.push({
-            minionType,
-            price,
-            amount,
-            lastBumped,
-            created,
-            system: {
-                tier,
-                fullType: "ACACIA_GENERATOR_1"
-            }
-        });
-    }
-
-    return auctions;
-}
 
 // TODO: change this to a real implementation
-function displayableMutation(auctions: Auction.FetchedAuctionData[]): DisplayableAuctions[] {
-    return generateAuctionData(commandParams.auctionsPerPage * 5)
+function displayableMutation(auctions: PrismaAuction[]): DisplayableAuctions[] {
+    return auctions.map(auction => {
+        return {
+            minionType: parseMinionType(auction.minion_id),
+            price: auction.price,
+            amount: auction.amount,
+            createdAt: new Date(auction.timeCreated).getTime(),
+            lastBumped: auction.timeBumped ? new Date(auction.timeBumped).getTime() : null,
+            system: {
+                tier: deromanise(auction.minion_id.split(" ").slice(-1)[0]),
+                fullType: auction.minion_id
+            }
+        }
+    })
 }
 
 /**
@@ -107,21 +90,29 @@ async function getAuctions(page: number, {
     minionSum: number
     totalAuctions: number
 }> {
+
+
     // get auctions from API
-    const auctions: Auction.FetchedAuctionData[] = []
+    let auctions: PrismaAuction[] = await prisma.auction.findMany({
+        where: {
+            // check for just minion type
+            ...minionType && !minionTier ? { minion_id: { contains: minionType.toUpperCase() } } : {},
+            // check for just minion tier
+            ...minionTier && !minionType ? { minion_id: { endsWith: "_" + minionTier.toString() } } : {},
+            // check for both minion type and tier
+            ...minionType && minionTier ? { minion_id: { contains: minionType.toUpperCase(), endsWith: "_" + minionTier } } : {}
+        },
+        orderBy: {
+            timeCreated: "desc"
+        }
+    })
+    // prisma seems to not be able to filter endsWith properly, this enforces it. do not remove
+    if (minionTier) auctions = auctions.filter(auction => auction.minion_id.endsWith("_" + minionTier.toString()))
+    
     let mutated = displayableMutation(auctions)
-
-    // apply filters
-    if (minionType) {
-        mutated = mutated.filter(auction => auction.system.fullType.toLowerCase().includes(minionType.toLowerCase()))
-    }
-
-    if (minionTier) {
-        mutated = mutated.filter(auction => auction.system.tier === minionTier)
-    }
     return {
         auctions: mutated.slice(page * commandParams.auctionsPerPage, (page + 1) * commandParams.auctionsPerPage),
-        minionSum: 0,
+        minionSum: mutated.reduce((acc, curr) => acc + curr.amount, 0),
         totalAuctions: mutated.length
     }
 }
@@ -158,7 +149,7 @@ async function makeEmbed(page: number, { minionType, minionTier, sorting }: { mi
         const auctionFields = (action: typeof auctions[number]) => [
             `Price: **${formatMinionPrice(action.price)}**`,
             `Amount: **${action.amount}**`,
-            `Created: ${`<t:${Math.floor(action.created / 1000)}:R>`}`,
+            `Created: ${`<t:${Math.floor(action.createdAt / 1000)}:R>`}`,
             action.lastBumped ? `Last Bumped: ${`<t:${Math.floor(action.lastBumped / 1000)}:R>`}` : null
         ].filter(Boolean)
 
@@ -249,7 +240,7 @@ function applyCollectorToStringSelect(reply: InteractionResponse<boolean>) {
             });
 
             if (!embedInstance) {
-                await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+                await interaction.reply({ content: "There was an error while executing this command!", flags:MessageFlags.Ephemeral });
                 return
             }
 
@@ -285,7 +276,7 @@ client.on("interactionCreate", async interaction => {
         });
 
         if (!embedInstance) {
-            await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+            await interaction.reply({ content: "There was an error while executing this command!", flags: MessageFlags.Ephemeral });
             return
         }
 
@@ -293,11 +284,11 @@ client.on("interactionCreate", async interaction => {
 
         const pagination = makePagination(0, totalAuctions)
         kv.set<PersistentSearchData>(`auctions:search:${interaction.user.id}`, { page: 0, minionType, minionTier })
-        const reply = await interaction.reply({ embeds: [embed], components: [pagination, makeStringSelect()], ephemeral: true });
+        const reply = await interaction.reply({ embeds: [embed], components: [pagination, makeStringSelect()], flags: MessageFlags.Ephemeral });
         applyCollectorToStringSelect(reply)
     } catch (error) {
         console.error(error);
-        await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+        await interaction.reply({ content: "There was an error while executing this command!", flags: MessageFlags.Ephemeral });
     }
 });
 
@@ -339,7 +330,6 @@ client.on("interactionCreate", async interaction => {
                 })
                 return;
         }
-        console.log(page)
         const embedInstance = await makeEmbed(page, {
             minionType: data?.minionType,
             minionTier: data?.minionTier,
@@ -347,7 +337,7 @@ client.on("interactionCreate", async interaction => {
         });
 
         if (!embedInstance) {
-            await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+            await interaction.reply({ content: "There was an error while executing this command!", flags: MessageFlags.Ephemeral });
             return
         }
 
@@ -365,7 +355,7 @@ client.on("interactionCreate", async interaction => {
         applyCollectorToStringSelect(reply)
     } catch (error) {
         console.error(error);
-        await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+        await interaction.reply({ content: "There was an error while executing this command!", flags: MessageFlags.Ephemeral });
     }
 })
 
@@ -379,7 +369,7 @@ client.on("interactionCreate", async interaction => {
         // get the page number
         const page = parseInt(interaction.fields.getTextInputValue("auctions:search:page:jump-input")) - 1;
         if (isNaN(page)) {
-            await interaction.reply({ content: "Invalid page number!", ephemeral: true });
+            await interaction.reply({ content: "Invalid page number!", flags: MessageFlags.Ephemeral });
             return
         }
         // get the user
@@ -392,7 +382,7 @@ client.on("interactionCreate", async interaction => {
         });
 
         if (!embedInstance) {
-            await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+            await interaction.reply({ content: "There was an error while executing this command!", flags: MessageFlags.Ephemeral });
             return
         }
 
@@ -407,10 +397,10 @@ client.on("interactionCreate", async interaction => {
             sorting: data?.sorting
         })
 
-        const reply = await interaction.reply({ embeds: [embed], components: [pagination, makeStringSelect()], ephemeral: true });
+        const reply = await interaction.reply({ embeds: [embed], components: [pagination, makeStringSelect()], flags: MessageFlags.Ephemeral });
         applyCollectorToStringSelect(reply)
     } catch (error) {
         console.error(error);
-        await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+        await interaction.reply({ content: "There was an error while executing this command!", flags: MessageFlags.Ephemeral });
     }
 })

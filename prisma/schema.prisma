@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id
+  sessions     Session[]
+  key          Key[]
+  loggedInAt   DateTime      @default(now()) @updatedAt
+  createdAt    DateTime      @default(now())
+  syncedAt     DateTime?
+  username     String        @unique
+  auctions     Auction[]
+  chatsAsUser1 Chat[]        @relation("user1")
+  chatsAsUser2 Chat[]        @relation("user2")
+  messages     Message[]
+  settings     UserSettings?
+}
+
+model UserSettings {
+  id                   String                @id
+  user_id              String                @unique
+  user                 User                  @relation(fields: [id], references: [id], onDelete: Cascade)
+  profileSettings      ProfileSettings?
+  notificationSettings NotificationSettings?
+}
+
+model ProfileSettings {
+  id           String       @id
+  userSettings UserSettings @relation(fields: [id], references: [user_id], onDelete: Cascade)
+  email        String?
+  bio          String?
+  urls         String[]
+}
+
+enum NotificationType {
+  ALL
+  EMAIL
+  DEVICE
+  NONE
+}
+
+model NotificationSettings {
+  id                  String           @id
+  userSettings        UserSettings     @relation(fields: [id], references: [user_id], onDelete: Cascade)
+  notificationType    NotificationType
+  marketNotifications Boolean          @default(true)
+  socialNotifications Boolean          @default(true)
+  fcmTokens           String[]
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Key {
+  id              String  @id
+  hashed_password String?
+  user_id         String
+  user            User    @relation(references: [id], fields: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model Minion {
+  id             String    @id
+  name           String
+  generator      String
+  generator_tier Int
+  maxTier        Int
+  craftCost      Float     @default(0)
+  sellers        Auction[]
+}
+
+model Auction {
+  id          String   @id @default(cuid())
+  minion_id   String
+  user_id     String
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  minion      Minion   @relation(fields: [minion_id], references: [id], onDelete: Cascade)
+  hasInfusion Boolean  @default(false)
+  hasFreeWill Boolean  @default(false)
+  price       Float
+  amount      Int
+  timeCreated DateTime @default(now()) @updatedAt
+  timeBumped  DateTime?
+  timeEmailed DateTime?
+
+  @@index([user_id])
+  @@index([minion_id])
+}
+
+model Chat {
+  id           String    @id @default(cuid())
+  user1_id     String
+  user2_id     String
+  user1        User      @relation("user1", fields: [user1_id], references: [id], onDelete: Cascade)
+  user2        User      @relation("user2", fields: [user2_id], references: [id], onDelete: Cascade)
+  messages     Message[]
+  createdAt    DateTime  @default(now())
+  user1Read    Boolean   @default(false)
+  user2Read    Boolean   @default(false)
+  user1Emailed Boolean   @default(false)
+  user2Emailed Boolean   @default(false)
+}
+
+enum MessageType {
+  TEXT
+  AUCTION
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  chat_id   String
+  user_id   String
+  content   String
+  type      MessageType @default(TEXT)
+  chat      Chat     @relation(fields: [chat_id], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([chat_id])
+  @@index([user_id])
+}
