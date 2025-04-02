@@ -1,12 +1,12 @@
 import assert from "assert";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, SlashCommandSubcommandBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags, SlashCommandSubcommandBuilder } from "discord.js";
 import { kv, prisma } from "../../central.config.js";
 import { client } from "../../discord/client.js";
 import getMinionTypes from "../../lib/auctions/getMinionTypes.js";
 import getSubcommand from "../../lib/getSubcommand.js";
 import resolveMinionEmoji from "../../lib/resolveMinionEmoji.js";
 import { Auction } from "../../lib/types/auction.js";
-import validatePlaintextMinionType from "../../lib/minions/validateSelectedMinionType.js";
+import validatePlaintextMinionType from "../../lib/minions/validatePlaintextMinionType.js";
 
 interface AuctionCreationBody {
     discordID: string;
@@ -189,10 +189,33 @@ client.on("interactionCreate", async interaction => {
                         freeWill: opts.freeWill
                     }
                 }
-                console.log(auctionBodyMapped);
+                const fulltype = await validatePlaintextMinionType(auctionBodyMapped.auction.type, auctionBodyMapped.auction.tier);
+                if (fulltype.systemError) return interaction.reply("An error occurred while validating the minion type. Please try again later.");
+                if (!fulltype.valid) return interaction.reply("Invalid minion type or tier. Please use the autocomplete to select a valid minion type and tier.");
+                const minionType = fulltype.validMinionID!
+                const mah_user = await prisma.userOAuthProvider.findFirst({
+                    where: {
+                        id: interaction.user.id,
+                        provider: "discord"
+                    },
+                    include: {
+                        user: true
+                    }
+                })
+                console.log(auctionBodyMapped)
+                if (!mah_user) return await interaction.reply({ content: "You need to link your Discord account to your MinionAH account first. Use `/discord link` to do so.", flags: MessageFlags.Ephemeral  });
+                // TODO: check for sufficient creation params
+                await prisma.auction.create({
+                    data: {
+                        amount: auctionBodyMapped.auction.amount,
+                        price: auctionBodyMapped.auction.price,
+                        hasFreeWill: auctionBodyMapped.auction.freeWill,
+                        hasInfusion: auctionBodyMapped.auction.mithrilInfused,
+                        minion_id: minionType,
+                        user_id: mah_user.user.id,
+                    }
+                })
                 await interaction.reply({ content: "Auction confirmed!", ephemeral: true });
-                // TODO: send to API
-                
                 break;
             case "cancel":
                 await interaction.reply({ content: "Auction cancelled!", ephemeral: true });

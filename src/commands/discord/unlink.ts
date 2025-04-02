@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Interaction, InteractionResponse, SlashCommandSubcommandBuilder } from "discord.js";
 import { client } from "../../discord/client.js";
 import getSubcommand from "../../lib/getSubcommand.js";
-import { kv } from "../../central.config.js";
+import { kv, prisma } from "../../central.config.js";
 
 export default new SlashCommandSubcommandBuilder()
     .setName("unlink")
@@ -51,7 +51,12 @@ client.on("interactionCreate", async interaction => {
             return
         }
         
-        // TODO: implement unlinking process, send request to the API
+        await prisma.userOAuthProvider.delete({
+            where: {
+                id: interaction.user.id,
+                provider: "discord"
+            }
+        })
 
         const responseEmbed = new EmbedBuilder()
             .setTitle("✅ Unlinking Process Completed ")

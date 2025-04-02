@@ -22,7 +22,7 @@ client.on("interactionCreate", async interaction => {
                 new ButtonBuilder()
                     .setLabel("Link Discord Account")
                     .setStyle(ButtonStyle.Link)
-                    .setURL("https://minionah.com/api/oauth/discord")
+                    .setURL("https://minionah.com/profile/settings")
             )
         
         await interaction.reply({ embeds: [embed], components: [actionRow], ephemeral: true })
