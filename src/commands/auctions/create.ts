@@ -79,7 +79,15 @@ client.on("interactionCreate", async interaction => {
                 .setColor("#2B2D31")
                 .setTitle("⚠️ A link to your MinionAH account is required")
                 .setDescription("Use `/discord link` to do so.")
-            return await interaction.reply({ embeds: [embed], ephemeral: true });
+            return await interaction.reply({ embeds: [embed], ephemeral: true, components: [
+                new ActionRowBuilder<ButtonBuilder>()
+                    .addComponents(
+                        new ButtonBuilder()
+                            .setLabel("Link your Discord account")
+                            .setStyle(ButtonStyle.Link)
+                            .setURL("https://minionah.com/profile/settings")
+                    )
+            ] });
         }
         const systemEmojis = await client.application?.emojis.fetch()
         if (!systemEmojis) throw new Error("An error occurred while fetching the bot emojis. Please try again later.");
