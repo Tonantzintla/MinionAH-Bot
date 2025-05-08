@@ -1,7 +1,7 @@
+import zodMW from "$rest/middleware/zodMW.js";
+import notif_send_schemaZod from "$rest/zod/notifications/notif_send_schema.zod.js";
 import e from "express";
 import send from "./send.js";
-import zodMW from "../../middleware/zodMW.js";
-import notif_send_schemaZod from "../../zod/notifications/notif_send_schema.zod.js";
 
 const notifications = e.Router();
 

@@ -1,12 +1,11 @@
+import getSubcommand from "$lib/getSubcommand.js";
+import validatePlaintextMinionType from "$lib/minions/validatePlaintextMinionType.js";
+import resolveMinionEmoji from "$lib/resolveMinionEmoji.js";
+import { Auction } from "$lib/types/auction.js";
+import { kv, prisma } from "$src/central.config.js";
+import { client } from "$src/discord/client.js";
 import assert from "assert";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags, SlashCommandSubcommandBuilder } from "discord.js";
-import { kv, prisma } from "../../central.config.js";
-import { client } from "../../discord/client.js";
-import getMinionTypes from "../../lib/auctions/getMinionTypes.js";
-import getSubcommand from "../../lib/getSubcommand.js";
-import resolveMinionEmoji from "../../lib/resolveMinionEmoji.js";
-import { Auction } from "../../lib/types/auction.js";
-import validatePlaintextMinionType from "../../lib/minions/validatePlaintextMinionType.js";
 
 interface AuctionCreationBody {
     discordID: string;

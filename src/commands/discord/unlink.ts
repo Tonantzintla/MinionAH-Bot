@@ -1,7 +1,7 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Interaction, InteractionResponse, SlashCommandSubcommandBuilder } from "discord.js";
-import { client } from "../../discord/client.js";
-import getSubcommand from "../../lib/getSubcommand.js";
-import { kv, prisma } from "../../central.config.js";
+import getSubcommand from "$lib/getSubcommand.js";
+import { prisma } from "$src/central.config.js";
+import { client } from "$src/discord/client.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, SlashCommandSubcommandBuilder } from "discord.js";
 
 export default new SlashCommandSubcommandBuilder()
     .setName("unlink")

@@ -1,6 +1,5 @@
+import commands from "$src/commands/commands.js";
 import { REST, Routes } from "discord.js";
-import { client } from "./client.js";
-import commands from "../commands/commands.js";
 
 export default async function applySlashCommands() {
     const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN!);
