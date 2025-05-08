@@ -68,8 +68,22 @@ client.on("interactionCreate", async interaction => {
     if (!interaction.isCommand()) return;
     if (interaction.commandName !== "auctions" || getSubcommand(interaction) !== "create") return;
     try {
+        const isLinked = await prisma.userOAuthProvider.findFirst({
+            where: {
+                id: interaction.user.id,
+                provider: "discord"
+            }
+        })
+        if (!isLinked) {
+            const embed = new EmbedBuilder()
+                .setColor("#2B2D31")
+                .setTitle("⚠️ A link to your MinionAH account is required")
+                .setDescription("Use `/discord link` to do so.")
+            return await interaction.reply({ embeds: [embed], ephemeral: true });
+        }
         const systemEmojis = await client.application?.emojis.fetch()
         if (!systemEmojis) throw new Error("An error occurred while fetching the bot emojis. Please try again later.");
+        // organize options
         const opts: Auction.AuctionOptions = {
             type: interaction.options.get("minion_type", true).value as string,
             amount: interaction.options.get("minions_amount", true).value as number,
@@ -82,6 +96,7 @@ client.on("interactionCreate", async interaction => {
         const minionTypeValidation = await validatePlaintextMinionType(opts.type, opts.tier);
         if (minionTypeValidation.systemError) throw new Error("An error occurred while validating the minion type. Please try again later.");
 
+        // structured validation for options. assists in cleaner assertions
         const validations = {
             minionType: {
                 check: minionTypeValidation.valid,
@@ -204,7 +219,6 @@ client.on("interactionCreate", async interaction => {
                 })
                 console.log(auctionBodyMapped)
                 if (!mah_user) return await interaction.reply({ content: "You need to link your Discord account to your MinionAH account first. Use `/discord link` to do so.", flags: MessageFlags.Ephemeral  });
-                // TODO: check for sufficient creation params
                 await prisma.auction.create({
                     data: {
                         amount: auctionBodyMapped.auction.amount,
