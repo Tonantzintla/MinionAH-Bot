@@ -1,6 +1,6 @@
-import { client } from "../discord/client.js";
-import getMinionTypes from "../lib/auctions/getMinionTypes.js";
-import getSubcommand from "../lib/getSubcommand.js";
+import getMinionTypes from "$lib/auctions/getMinionTypes.js";
+import getSubcommand from "$lib/getSubcommand.js";
+import { client } from "$src/discord/client.js";
 
 const permitted = [
     "auctions:create",

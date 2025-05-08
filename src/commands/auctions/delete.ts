@@ -1,9 +1,9 @@
-import { ActionRowBuilder, CacheType, Interaction, parseEmoji, SlashCommandSubcommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
-import { client } from "../../discord/client.js";
-import getSubcommand from "../../lib/getSubcommand.js";
-import { Auction } from "../../lib/types/auction.js";
-import parseMinionType from "../../lib/auctions/parseMinionType.js";
-import resolveMinionEmoji from "../../lib/resolveMinionEmoji.js";
+import parseMinionType from "$lib/auctions/parseMinionType.js";
+import getSubcommand from "$lib/getSubcommand.js";
+import resolveMinionEmoji from "$lib/resolveMinionEmoji.js";
+import { Auction } from "$lib/types/auction.js";
+import { client } from "$src/discord/client.js";
+import { ActionRowBuilder, SlashCommandSubcommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
 
 export default new SlashCommandSubcommandBuilder()
     .setName("delete")

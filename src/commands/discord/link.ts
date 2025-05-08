@@ -1,6 +1,6 @@
+import getSubcommand from "$lib/getSubcommand.js";
+import { client } from "$src/discord/client.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, SlashCommandSubcommandBuilder } from "discord.js";
-import { client } from "../../discord/client.js";
-import getSubcommand from "../../lib/getSubcommand.js";
 
 export default new SlashCommandSubcommandBuilder()
     .setName("link")

@@ -6,5 +6,5 @@ export default function authMiddleware(
   next: NextFunction
 ) {
   if (req.headers.authorization?.trim() == process.env.API_KEY) return next();
-  return res.status(401).send("Unauthorized request.");
+  res.status(401).send("Unauthorized request.");
 }

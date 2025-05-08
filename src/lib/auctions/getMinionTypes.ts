@@ -1,4 +1,4 @@
-import getMinionPrices from "../prices/getMinionPrices.js";
+import getMinionPrices from "$lib/prices/getMinionPrices.js";
 
 export default async function getMinionTypes(raw: boolean = false): Promise<string[] | null> {
     try {

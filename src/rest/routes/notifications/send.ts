@@ -1,8 +1,8 @@
+import notif_send_schemaZod from "$rest/zod/notifications/notif_send_schema.zod.js";
+import { client } from "$src/discord/client.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import e from "express";
-import notif_send_schemaZod from "../../zod/notifications/notif_send_schema.zod.js";
 import { z } from "zod";
-import { client } from "../../../discord/client.js";
 
 export default async (req: e.Request, res: e.Response) => {
   try {

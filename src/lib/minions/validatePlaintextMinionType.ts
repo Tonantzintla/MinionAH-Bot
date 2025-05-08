@@ -1,4 +1,4 @@
-import getMinionTypes from "../auctions/getMinionTypes.js";
+import getMinionTypes from "$lib/auctions/getMinionTypes.js";
 
 /**
  * Validates a plaintext minion type and tier
