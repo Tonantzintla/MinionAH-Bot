@@ -1,6 +1,6 @@
 import notif_send_schemaZod from "$rest/zod/notifications/notif_send_schema.zod.js";
 import { client } from "$src/discord/client.js";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, DiscordAPIError, EmbedBuilder } from "discord.js";
 import e from "express";
 import { z } from "zod";
 
@@ -22,8 +22,9 @@ export default async (req: e.Request, res: e.Response) => {
 
     res.status(200).send("Notification sent");
   } catch (error) {
+    const err = error as DiscordAPIError
     console.error(error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json(err.rawError);
   }
 }
 
