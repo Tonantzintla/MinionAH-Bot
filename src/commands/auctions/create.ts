@@ -197,7 +197,6 @@ client.on("interactionCreate", async (interaction) => {
             user: true
           }
         });
-        console.log(auctionBodyMapped);
         if (!mah_user) return await interaction.reply({ content: "You need to link your Discord account to your MinionAH account first. Use `/discord link` to do so.", flags: MessageFlags.Ephemeral });
         await prisma.auction.create({
           data: {

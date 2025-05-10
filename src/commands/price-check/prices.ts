@@ -2,7 +2,9 @@ import parseMinionType from "$lib/auctions/parseMinionType.js";
 import formatMinionPrice from "$lib/prices/formatMinionPrice.js";
 import getMinionPrices from "$lib/prices/getMinionPrices.js";
 import resolveMinionEmoji from "$lib/resolveMinionEmoji.js";
+import { maintenanceMode } from "$src/central.config";
 import { client } from "$src/discord/client.js";
+import maintenanceModeEmbed from "$src/discord/maintenanceModeEmbed";
 import crypto from "crypto";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 
@@ -42,7 +44,7 @@ async function getMinionEmbed(minionPrices: Awaited<ReturnType<typeof getMinionP
       .addFields([
         {
           name: " ",
-          value: displayedEntries.map(([type, price]) => `${resolveMinionEmoji(type, botEmojis)} ${parseMinionType(type)} ~ \`${formatMinionPrice(price)}\``).join("\n"),
+          value: displayedEntries.map(([type, price]) => `${resolveMinionEmoji(type, botEmojis)} ${parseMinionType(type)} ~ \`${formatMinionPrice(price.craftCost)}\``).join("\n"),
           inline: true
         }
       ]);
@@ -131,6 +133,7 @@ client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
   if (!(interaction.commandName === "prices")) return;
   try {
+    if (maintenanceMode) return await interaction.reply({ embeds: [maintenanceModeEmbed], ephemeral: true });
     // get prices
     const filter = (interaction.options.get("type")?.value as string | undefined) ?? "_none";
     const tier = (interaction.options.get("tier")?.value as number | undefined) ?? -1;
@@ -169,6 +172,7 @@ client.on("interactionCreate", async (interaction) => {
   if (!interaction.isButton()) return;
   if (!interaction.customId.startsWith("price-check:prices:move-to")) return;
   try {
+    if (maintenanceMode) return await interaction.reply({ embeds: [maintenanceModeEmbed], ephemeral: true });
     // get the page number
     const pageNumber = parseInt(interaction.customId.split(":")[3]);
     // get the filter
