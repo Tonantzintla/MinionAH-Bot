@@ -1,6 +1,6 @@
 import notif_test_schemaZod from "$rest/zod/notifications/notif_test_schema.zod.js";
 import { client } from "$src/discord/client.js";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, DiscordAPIError, EmbedBuilder } from "discord.js";
+import { DiscordAPIError, EmbedBuilder } from "discord.js";
 import e from "express";
 import { z } from "zod";
 
@@ -17,7 +17,9 @@ export default async (req: e.Request, res: e.Response) => {
       embeds: [msgEmbed],
     });
 
-    res.status(200).send("Notification sent");
+    res.status(200).json({
+      message: "Notification sent successfully"
+    });
   } catch (error) {
     const err = error as DiscordAPIError
     console.error(error);

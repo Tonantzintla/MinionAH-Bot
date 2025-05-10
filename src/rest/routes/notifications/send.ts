@@ -20,7 +20,9 @@ export default async (req: e.Request, res: e.Response) => {
       components: [btnRow],
     });
 
-    res.status(200).send("Notification sent");
+    res.status(200).json({
+      message: "Notification sent successfully",
+    });
   } catch (error) {
     const err = error as DiscordAPIError
     console.error(error);
