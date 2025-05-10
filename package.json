@@ -4,22 +4,38 @@
   "version": "0.0.1",
   "dependencies": {
     "@prisma/client": "^6.7.0",
-    "axios": "^1.9.0",
     "discord.js": "^14.19.3",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "node-cache": "^5.1.2",
+    "node-cron": "^4.0.0",
     "prisma": "^6.7.0",
     "zod": "^3.24.4"
   },
   "devDependencies": {
+    "@eslint/compat": "^1.2.9",
     "@types/express": "^5.0.1",
+    "eslint": "^9.26.0",
+    "eslint-config-prettier": "^10.1.5",
+    "globals": "^16.1.0",
     "nodemon": "^3.1.10",
-    "typescript": "^5.8.3"
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.32.0"
   },
   "scripts": {
     "prod": "bun ./src",
     "dev": "bunx nodemon -e ts --watch 'src/**/*.ts' --exec 'bun ./src'",
-    "dev:prod": "dotenv -e .env -- bunx nodemon -e ts --watch 'src/**/*.ts' --exec 'bun ./src'"
+    "dev:prod": "dotenv -e .env -- bunx nodemon -e ts --watch 'src/**/*.ts' --exec 'bun ./src'",
+    "lint": "prettier --check . && eslint .",
+    "format": "prettier --write ."
+  },
+  "engines": {
+    "node": "^22",
+    "pnpm": "forbidden, use bun instead",
+    "deno": "forbidden, use bun instead",
+    "npm": "forbidden, use bun instead",
+    "yarn": "forbidden, use bun instead",
+    "bun": "^1"
   }
 }

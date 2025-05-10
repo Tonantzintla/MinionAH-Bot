@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "edwinhuish.better-comments-next",
+    "Prisma.prisma",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode"
+  ],
+  "unwantedRecommendations": ["aaron-bond.better-comments"]
+}

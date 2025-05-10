@@ -1,20 +1,33 @@
-import axios from "axios";
+import { prisma } from "$src/central.config";
 
 interface MinionPrices {
-    [key: string]: number
+  id: string;
+  name: string;
+  generator: string;
+  generator_tier: number;
+  maxTier: number;
+  craftCost: number;
 }
 
-export default async function getMinionPrices(filter?: string, tier?: number): Promise<MinionPrices | null> {
-    try {
-        if (!process.env.PRICE_CHECKER_URL) throw new Error("PRICE_CHECKER_URL not found in environment variables.");
-        const {data: minions} = await axios.get<MinionPrices>(process.env.PRICE_CHECKER_URL, {
-            timeout: 15000
-        });
-        const filtered = filter && filter !== "_none" ? Object.fromEntries(Object.entries(minions).filter(([key]) => key.toLowerCase().includes(filter.toLowerCase()))) : minions;
-        const filteredTiers = tier && tier !== -1 ? Object.fromEntries(Object.entries(filtered).filter(([key]) => parseInt(key.split("_").slice(-1)[0]) === tier)) : filtered;
-        return filteredTiers;
-    } catch (error) {
-        console.error("Error in getMinionPrices: ", error);
-        return null
-    }
+export default async function getMinionPrices(
+  filter?: string,
+  tier?: number
+): Promise<MinionPrices[] | null> {
+  try {
+    const minionPrices = await prisma.minion.findMany();
+    const filtered =
+      filter && filter !== "_none"
+        ? minionPrices.filter((minion) =>
+            minion.name.toLowerCase().includes(filter.toLowerCase())
+          )
+        : minionPrices;
+    const filteredTiers =
+      tier && tier !== -1
+        ? filtered.filter((minion) => minion.generator_tier === tier)
+        : filtered;
+    return filteredTiers;
+  } catch (error) {
+    console.error("Error in getMinionPrices: ", error);
+    return null;
+  }
 }

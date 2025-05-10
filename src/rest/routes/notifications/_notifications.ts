@@ -7,7 +7,7 @@ import notif_test_schemaZod from "$src/rest/zod/notifications/notif_test_schema.
 
 const notifications = e.Router();
 
-notifications.post("/send", zodMW(notif_send_schemaZod),send);
-notifications.post("/test", zodMW(notif_test_schemaZod), test)
+notifications.post("/send", zodMW(notif_send_schemaZod), send);
+notifications.post("/test", zodMW(notif_test_schemaZod), test);
 
 export default notifications;

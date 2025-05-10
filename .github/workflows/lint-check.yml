@@ -1,0 +1,22 @@
+name: Checks
+
+on:
+  push:
+    paths: ["src/**", ".github/workflows/lint-check.yml"]
+
+jobs:
+  formatting-checks:
+    name: Check linting (es-lint), formatting (prettier)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: oven-sh/setup-bun@v2
+
+      - name: Make dummy env for types
+        run: |
+          echo "ls -a ."
+          ls -a .
+          mv .env.example .env
+
+      - name: Check linting and formatting
+        run: bun run lint

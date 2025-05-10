@@ -14,23 +14,23 @@ export default async (req: e.Request, res: e.Response) => {
     const dmChannel = await getDMChannel(data.receiverDiscordID);
 
     await dmChannel.send({
-      embeds: [msgEmbed],
+      embeds: [msgEmbed]
     });
 
     res.status(200).json({
       message: "Notification sent successfully"
     });
   } catch (error) {
-    const err = error as DiscordAPIError
+    const err = error as DiscordAPIError;
     console.error(error);
     res.status(500).json(err.rawError);
   }
-}
+};
 
 function getNotificationEmbed(data: z.infer<typeof notif_test_schemaZod>) {
   return new EmbedBuilder()
     .setTitle("Example Notification")
-    .setColor("#2b2d31")
+    .setColor("#262626")
     .setThumbnail(
       `${process.env.CLOUDINARY_URL}/image/upload/v1/users/avatars/${data.senderID}`
     )
@@ -40,6 +40,7 @@ function getNotificationEmbed(data: z.infer<typeof notif_test_schemaZod>) {
 }
 
 async function getDMChannel(user: string) {
-    const userObj = client.users.cache.get(user) || await client.users.fetch(user);
-    return userObj.dmChannel || await userObj.createDM();
-  }
+  const userObj =
+    client.users.cache.get(user) || (await client.users.fetch(user));
+  return userObj.dmChannel || (await userObj.createDM());
+}
