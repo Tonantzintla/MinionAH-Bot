@@ -1,7 +1,7 @@
 import authMiddleware from "$rest/middleware/auth.js";
 import rootRouter from "$rest/rootRouter.js";
 import express from "express";
-import cron from "node-cron";
+// import cron from "node-cron";
 import "./central.config.js";
 import applySlashCommands from "./discord/applySlashCommands.js";
 import { client } from "./discord/client.js";
@@ -28,4 +28,4 @@ app.listen(process.env.WEB_PORT, () =>
 );
 
 // --- heartbeat
-cron.schedule("5 * * * *", async () => await fetch(process.env.HEARTBEAT_URL!));
+// cron.schedule("5 * * * *", async () => await fetch(process.env.HEARTBEAT_URL!));
