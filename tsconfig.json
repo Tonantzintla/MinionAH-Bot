@@ -9,12 +9,12 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
+    "sourceMap": true,
     "paths": {
       "$generated/*": ["./src/generated/*"],
       "$lib/*": ["./src/lib/*"],
       "$src/*": ["./src/*"],
       "$rest/*": ["./src/rest/*"],
-
     }
-  },
+  }
 }
