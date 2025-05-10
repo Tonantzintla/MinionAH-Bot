@@ -17,6 +17,7 @@ interface AuctionCreationBody {
     price: number;
     mithrilInfused: boolean;
     freeWill: boolean;
+    negotiable: boolean;
   };
 }
 
@@ -39,7 +40,8 @@ export default new SlashCommandSubcommandBuilder()
   )
   .addIntegerOption((option) => option.setName("starting_price").setDescription("The starting price of the auction").setRequired(true))
   .addBooleanOption((option) => option.setName("mithril_infusion").setDescription("Do your minions have mithril infusion?").setRequired(false))
-  .addBooleanOption((option) => option.setName("free_will").setDescription("Do your minions have free will?").setRequired(false));
+  .addBooleanOption((option) => option.setName("free_will").setDescription("Do your minions have free will?").setRequired(false))
+  .addBooleanOption((option) => option.setName("negotiable").setDescription("Do you want to make your price negotiable?").setRequired(false));
 
 // base listener
 client.on("interactionCreate", async (interaction) => {
@@ -54,7 +56,7 @@ client.on("interactionCreate", async (interaction) => {
       }
     });
     if (!isLinked) {
-      const embed = new EmbedBuilder().setColor("#262626").setTitle("⚠️ A link to your MinionAH account is required").setDescription("Use `/discord link` to do so.");
+      const embed = new EmbedBuilder().setColor("#262626").setTitle("⚠️ A link to your MinionAH account is required").setDescription("You need to link your Discord account to your MinionAH account in order to create an auction. Please click the button below to link your account.").setFooter({ text: "If you don't have a MinionAH account, please create one at minionah.com" });
       return await interaction.reply({ embeds: [embed], ephemeral: true, components: [new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setLabel("Link your Discord account").setStyle(ButtonStyle.Link).setURL("https://minionah.com/profile/settings"))] });
     }
     const systemEmojis = await client.application?.emojis.fetch();
@@ -66,7 +68,8 @@ client.on("interactionCreate", async (interaction) => {
       price: interaction.options.get("starting_price", true).value as number,
       mithrilInfused: (interaction.options.get("mithril_infusion", false)?.value as boolean) ?? false,
       tier: interaction.options.get("minion_tier", true).value as number,
-      freeWill: (interaction.options.get("free_will", false)?.value as boolean) ?? false
+      freeWill: (interaction.options.get("free_will", false)?.value as boolean) ?? false,
+      negotiable: (interaction.options.get("negotiable", false)?.value as boolean) ?? false
     };
 
     const minionTypeValidation = await validatePlaintextMinionType(opts.type, opts.tier);
@@ -97,6 +100,10 @@ client.on("interactionCreate", async (interaction) => {
       freeWill: {
         check: true, // no validation needed, its a boolean!
         errorMessage: "How did you even get here?"
+      },
+      negotiable: {
+        check: true, // no validation needed, its a boolean!
+        errorMessage: "How did you even get here?"
       }
     };
 
@@ -108,7 +115,7 @@ client.on("interactionCreate", async (interaction) => {
     const minionTypeCapitalized = [opts.type.split("_")[0]].map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join("");
 
     // organize props
-    const props = ["⚙️ Minion Type ~ " + resolveMinionEmoji(minionTypeValidation.validMinionID!, systemEmojis) + " " + minionTypeCapitalized + ` ${opts.tier}`, "🔢 Minions Amount ~ " + opts.amount, "💵 Starting Price ~ " + opts.price + " Coins", "⚡ Mithril Infusion ~ " + (opts.mithrilInfused ? "✅" : "⛔"), "💪 Free Will ~ " + (opts.freeWill ? "✅" : "⛔")];
+    const props = ["⚙️ Minion Type ~ " + resolveMinionEmoji(minionTypeValidation.validMinionID!, systemEmojis) + " " + minionTypeCapitalized + ` ${opts.tier}`, "🔢 Minions Amount ~ " + opts.amount, "💵 Starting Price ~ " + opts.price + " Coins", "⚡ Mithril Infusion ~ " + (opts.mithrilInfused ? "✅" : "⛔"), "💪 Free Will ~ " + (opts.freeWill ? "✅" : "⛔"), "🤝 Negotiable ~ " + (opts.negotiable ? "✅" : "⛔")];
 
     // create embed
     const embed = new EmbedBuilder()
@@ -173,7 +180,8 @@ client.on("interactionCreate", async (interaction) => {
             amount: opts.amount,
             price: opts.price,
             mithrilInfused: opts.mithrilInfused,
-            freeWill: opts.freeWill
+            freeWill: opts.freeWill,
+            negotiable: opts.negotiable
           }
         };
         const fulltype = await validatePlaintextMinionType(auctionBodyMapped.auction.type, auctionBodyMapped.auction.tier);
@@ -197,6 +205,7 @@ client.on("interactionCreate", async (interaction) => {
             price: auctionBodyMapped.auction.price,
             hasFreeWill: auctionBodyMapped.auction.freeWill,
             hasInfusion: auctionBodyMapped.auction.mithrilInfused,
+            isNegotiable: auctionBodyMapped.auction.negotiable,
             minion_id: minionType,
             user_id: mah_user.user.id
           }
