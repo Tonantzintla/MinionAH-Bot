@@ -4,8 +4,9 @@ import getSubcommand from "$lib/getSubcommand.js";
 import deromanise from "$lib/prices/deromanise.js";
 import formatMinionPrice from "$lib/prices/formatMinionPrice.js";
 import resolveMinionEmoji from "$lib/resolveMinionEmoji.js";
-import { kv, prisma } from "$src/central.config.js";
+import { kv, maintenanceMode, prisma } from "$src/central.config.js";
 import { client } from "$src/discord/client.js";
+import maintenanceModeEmbed from "$src/discord/maintenanceModeEmbed";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, InteractionResponse, MessageFlags, SlashCommandSubcommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 
 interface DisplayableAuctions {
@@ -262,6 +263,7 @@ client.on("interactionCreate", async interaction => {
     if (interaction.commandName !== "auctions" || getSubcommand(interaction) !== "search") return;
 
     try {
+        if (maintenanceMode) return await interaction.reply({ embeds: [maintenanceModeEmbed], ephemeral: true });
         // get filters
         const minionType = interaction.options.get("minion_type", false)?.value as string | undefined;
         const minionTier = interaction.options.get("minion_tier", false)?.value as number | undefined;
@@ -296,6 +298,7 @@ client.on("interactionCreate", async interaction => {
     if (!interaction.isButton()) return;
     if (!interaction.customId.startsWith("auctions:search:page")) return;
     try {
+        if (maintenanceMode) return await interaction.reply({ embeds: [maintenanceModeEmbed], ephemeral: true });
         const action = interaction.customId.split(":")[3] as "previous" | "next" | "go-to";
         const user = interaction.user.id;
         const data = kv.get<PersistentSearchData>(`auctions:search:${user}`);
@@ -363,6 +366,7 @@ client.on("interactionCreate", async interaction => {
     if (!interaction.isModalSubmit()) return;
     if (!interaction.customId.startsWith("auctions:search:page:jump")) return;
     try {
+        if (maintenanceMode) return await interaction.reply({ embeds: [maintenanceModeEmbed], ephemeral: true });
         // get the page number
         const page = parseInt(interaction.fields.getTextInputValue("auctions:search:page:jump-input")) - 1;
         if (isNaN(page)) {

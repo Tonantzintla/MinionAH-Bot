@@ -2,7 +2,9 @@ import parseMinionType from "$lib/auctions/parseMinionType.js";
 import getSubcommand from "$lib/getSubcommand.js";
 import resolveMinionEmoji from "$lib/resolveMinionEmoji.js";
 import { Auction } from "$lib/types/auction.js";
+import { maintenanceMode } from "$src/central.config";
 import { client } from "$src/discord/client.js";
+import maintenanceModeEmbed from "$src/discord/maintenanceModeEmbed";
 import { ActionRowBuilder, SlashCommandSubcommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
 
 export default new SlashCommandSubcommandBuilder()
@@ -43,6 +45,7 @@ client.on("interactionCreate", async (interaction) => {
     if (!interaction.isCommand()) return;
     if (interaction.commandName !== "auctions" || getSubcommand(interaction) !== "delete") return;
     try {
+        if (maintenanceMode) return await interaction.reply({ embeds:[maintenanceModeEmbed], ephemeral: true });
         const auctions = await getAuctions(interaction.user.id);
         if (auctions.length === 0) {
             await interaction.reply({ content: "You don't have any auctions to delete!", ephemeral: true });

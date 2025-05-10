@@ -1,5 +1,7 @@
 import getSubcommand from "$lib/getSubcommand.js";
+import { maintenanceMode } from "$src/central.config";
 import { client } from "$src/discord/client.js";
+import maintenanceModeEmbed from "$src/discord/maintenanceModeEmbed";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, SlashCommandSubcommandBuilder } from "discord.js";
 
 export default new SlashCommandSubcommandBuilder()
@@ -12,6 +14,7 @@ client.on("interactionCreate", async interaction => {
     if (interaction.commandName !== "discord" || getSubcommand(interaction) !== "link") return
 
     try {
+        if (maintenanceMode) return await interaction.reply({embeds: [maintenanceModeEmbed], ephemeral: true})
         const embed = new EmbedBuilder()
             .setTitle("✅ Link your Discord account to MinionAH")
             .setColor("#2B2D31")

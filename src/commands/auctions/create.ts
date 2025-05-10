@@ -2,8 +2,9 @@ import getSubcommand from "$lib/getSubcommand.js";
 import validatePlaintextMinionType from "$lib/minions/validatePlaintextMinionType.js";
 import resolveMinionEmoji from "$lib/resolveMinionEmoji.js";
 import { Auction } from "$lib/types/auction.js";
-import { kv, prisma } from "$src/central.config.js";
+import { kv, maintenanceMode, prisma } from "$src/central.config.js";
 import { client } from "$src/discord/client.js";
+import maintenanceModeEmbed from "$src/discord/maintenanceModeEmbed";
 import assert from "assert";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags, SlashCommandSubcommandBuilder } from "discord.js";
 
@@ -67,6 +68,7 @@ client.on("interactionCreate", async interaction => {
     if (!interaction.isCommand()) return;
     if (interaction.commandName !== "auctions" || getSubcommand(interaction) !== "create") return;
     try {
+        if (maintenanceMode) return await interaction.reply({ embeds: [maintenanceModeEmbed], ephemeral: true });
         const isLinked = await prisma.userOAuthProvider.findFirst({
             where: {
                 id: interaction.user.id,
@@ -195,6 +197,7 @@ client.on("interactionCreate", async interaction => {
     try {
         if (!interaction.isButton()) return;
         if (!interaction.customId.startsWith("auctions_create%")) return;
+        if (maintenanceMode) return await interaction.reply({ embeds: [maintenanceModeEmbed], ephemeral: true });
         const [_, action, tempAuctionID] = interaction.customId.split("%");
         const opts = kv.get<Auction.AuctionOptions>(tempAuctionID);
         if (!opts) return await interaction.reply({ content: "The auction you are interacting with has expired.", ephemeral: true });

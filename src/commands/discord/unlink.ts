@@ -1,6 +1,7 @@
 import getSubcommand from "$lib/getSubcommand.js";
-import { prisma } from "$src/central.config.js";
+import { maintenanceMode, prisma } from "$src/central.config.js";
 import { client } from "$src/discord/client.js";
+import maintenanceModeEmbed from "$src/discord/maintenanceModeEmbed";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, SlashCommandSubcommandBuilder } from "discord.js";
 
 export default new SlashCommandSubcommandBuilder()
@@ -12,6 +13,7 @@ client.on("interactionCreate", async interaction => {
     if (interaction.commandName !== "discord" || getSubcommand(interaction) !== "unlink") return
 
     try {
+        if (maintenanceMode) return await interaction.reply({ embeds: [maintenanceModeEmbed], ephemeral: true })
         const warningEmbed = new EmbedBuilder()
             .setTitle("⚠️ Unlink your Discord account from MinionAH")
             .setColor("#2B2D31")
@@ -41,6 +43,7 @@ client.on("interactionCreate", async interaction => {
     if (!interaction.customId.startsWith("discord-integration:unlink")) return
 
     try {
+        if (maintenanceMode) return await interaction.reply({ embeds: [maintenanceModeEmbed], ephemeral: true })
         if (interaction.customId.startsWith("discord-integration:unlink-cancel")) {
             const responseEmbed = new EmbedBuilder()
                 .setTitle("🚫 Unlinking Process Cancelled")
