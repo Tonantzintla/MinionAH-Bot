@@ -139,7 +139,7 @@ async function getAuctions(
       auction.minion_id.endsWith("_" + minionTier.toString())
     );
 
-  let mutated = displayableMutation(auctions);
+  const mutated = displayableMutation(auctions);
   return {
     auctions: mutated.slice(
       page * commandParams.auctionsPerPage,
@@ -208,7 +208,7 @@ async function makeEmbed(
       .setColor("#262626")
       .setDescription(descriptionFields.join("\n"))
       .addFields(
-        auctions.map((auction, idx) => ({
+        auctions.map((auction, _idx) => ({
           name: `${resolveMinionEmoji(auction.system.fullType, botEmojis)} ${parseMinionType(auction.system.fullType)}`,
           value: auctionFields(auction).join("\n"),
           inline: true

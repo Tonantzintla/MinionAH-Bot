@@ -189,7 +189,7 @@ client.on("interactionCreate", async (interaction) => {
     };
 
     // assertions
-    for (const [key, value] of Object.entries(validations)) {
+    for (const [_key, value] of Object.entries(validations)) {
       assert(value.check, value.errorMessage);
     }
 
@@ -273,7 +273,7 @@ client.on("interactionCreate", async (interaction) => {
         ephemeral: true
       });
     switch (action) {
-      case "confirm":
+      case "confirm": {
         const auctionBodyMapped: AuctionCreationBody = {
           discordID: interaction.user.id,
           auction: {
@@ -331,6 +331,7 @@ client.on("interactionCreate", async (interaction) => {
           ephemeral: true
         });
         break;
+      }
       case "cancel":
         await interaction.reply({
           content: "Auction cancelled!",

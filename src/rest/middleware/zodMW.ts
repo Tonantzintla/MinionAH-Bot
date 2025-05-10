@@ -1,6 +1,6 @@
 import e from "express";
 
-export default function zodMW(schema: Zod.Schema<any>) {
+export default function zodMW(schema: Zod.Schema<unknown>) {
   return async (req: e.Request, res: e.Response, next: e.NextFunction) => {
     try {
       const data = schema.parse(req.body);
