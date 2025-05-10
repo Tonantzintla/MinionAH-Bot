@@ -1,4 +1,3 @@
-import parseMinionType from "$lib/auctions/parseMinionType.js";
 import formatMinionPrice from "$lib/prices/formatMinionPrice.js";
 import getMinionPrices from "$lib/prices/getMinionPrices.js";
 import resolveMinionEmoji from "$lib/resolveMinionEmoji.js";
@@ -56,7 +55,6 @@ async function getMinionEmbed(
       offset * minionsPerPage,
       offset * minionsPerPage + minionsPerPage
     );
-    console.log(displayedEntries);
     // generate the embed
     const embed = new EmbedBuilder()
       .setColor("#262626")
@@ -76,8 +74,8 @@ async function getMinionEmbed(
           name: " ",
           value: displayedEntries
             .map(
-              ([type, price]) =>
-                `${resolveMinionEmoji(type, botEmojis)} ${parseMinionType(type)} ~ \`${formatMinionPrice(price.craftCost)}\``
+              ([_, price]) =>
+                `${resolveMinionEmoji(price.id, botEmojis)} ${price.name} ~ \`${formatMinionPrice(price.craftCost)}\``
             )
             .join("\n"),
           inline: true
