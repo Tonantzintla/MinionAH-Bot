@@ -56,6 +56,7 @@ async function getMinionEmbed(
       offset * minionsPerPage,
       offset * minionsPerPage + minionsPerPage
     );
+    console.log(displayedEntries);
     // generate the embed
     const embed = new EmbedBuilder()
       .setColor("#262626")
@@ -106,7 +107,7 @@ function constructLocalPagination(
   filter: string = "_none",
   tier: number = -1
 ) {
-  const row = new ActionRowBuilder().addComponents(
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId(
         `price-check:prices:move-to:${pageNumber - 2}:${filter}:${tier}:local:${crypto.randomBytes(6).toString("hex")}`
@@ -174,7 +175,7 @@ function constructSecondaryPagination(
       .setStyle(ButtonStyle.Primary)
       .setDisabled(displayedPage >= maxPages);
   }
-  const row = new ActionRowBuilder().addComponents(
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     constructSecondaryPaginationButton(0, -2),
     constructSecondaryPaginationButton(1, -1),
     new ButtonBuilder()
@@ -217,18 +218,16 @@ client.on("interactionCreate", async (interaction) => {
     // if no page, throw error
     if (!page) throw new Error("Page is null.");
     // send the embed
-    // @ts-ignore
+    //
     await interaction.reply({
       embeds: [page],
       components: [
-        //@ts-ignore
         constructLocalPagination(
           0,
           Math.ceil(Object.keys(minionPrices).length / minionsPerPage),
           filter,
           tier
         ),
-        //@ts-ignore
         constructSecondaryPagination(
           0,
           Math.ceil(Object.keys(minionPrices).length / minionsPerPage),
@@ -274,19 +273,15 @@ client.on("interactionCreate", async (interaction) => {
     // if no page, throw error
     if (!page) throw new Error("Page is null.");
     // edit the message
-    // @ts-ignore
     await interaction.update({
       embeds: [page],
-      ephemeral: true,
       components: [
-        //@ts-ignore
         constructLocalPagination(
           pageNumber,
           Math.ceil(Object.keys(minionPrices).length / minionsPerPage),
           filter,
           tier
         ),
-        //@ts-ignore
         constructSecondaryPagination(
           pageNumber,
           Math.ceil(Object.keys(minionPrices).length / minionsPerPage),
@@ -393,19 +388,16 @@ client.on("interactionCreate", async (interaction) => {
     // if no page, throw error
     if (!page) throw new Error("Page is null.");
     // edit the message
-    // @ts-ignore
     await interaction.reply({
       embeds: [page],
       ephemeral: true,
       components: [
-        //@ts-ignore
         constructLocalPagination(
           pageNumber - 1,
           Math.ceil(Object.keys(minionPrices).length / minionsPerPage),
           filter,
           tier
         ),
-        //@ts-ignore
         constructSecondaryPagination(
           pageNumber - 1,
           Math.ceil(Object.keys(minionPrices).length / minionsPerPage),
