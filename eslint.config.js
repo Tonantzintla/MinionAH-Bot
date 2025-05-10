@@ -14,6 +14,22 @@ export default ts.config(
   ...ts.configs.recommended,
   prettier,
   {
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          args: "all",
+          argsIgnorePattern: "^_",
+          caughtErrors: "all",
+          caughtErrorsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          ignoreRestSiblings: true
+        }
+      ]
+    }
+  },
+  {
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
