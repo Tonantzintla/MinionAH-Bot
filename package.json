@@ -12,13 +12,28 @@
     "zod": "^3.24.4"
   },
   "devDependencies": {
+    "@eslint/compat": "^1.2.9",
     "@types/express": "^5.0.1",
+    "eslint": "^9.26.0",
+    "eslint-config-prettier": "^10.1.5",
+    "globals": "^16.1.0",
     "nodemon": "^3.1.10",
-    "typescript": "^5.8.3"
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.32.0"
   },
   "scripts": {
     "prod": "bun ./src",
     "dev": "bunx nodemon -e ts --watch 'src/**/*.ts' --exec 'bun ./src'",
-    "dev:prod": "dotenv -e .env -- bunx nodemon -e ts --watch 'src/**/*.ts' --exec 'bun ./src'"
+    "dev:prod": "dotenv -e .env -- bunx nodemon -e ts --watch 'src/**/*.ts' --exec 'bun ./src'",
+    "lint": "prettier --check . && eslint ."
+  },
+  "engines": {
+    "node": "^22",
+    "pnpm": "forbidden, use bun instead",
+    "deno": "forbidden, use bun instead",
+    "npm": "forbidden, use bun instead",
+    "yarn": "forbidden, use bun instead",
+    "bun": "^1"
   }
 }
