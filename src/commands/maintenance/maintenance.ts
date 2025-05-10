@@ -37,11 +37,17 @@ client.on("interactionCreate", async (interaction) => {
         status: "dnd"
       });
     } else {
-      await interaction.reply({ content: "Maintenance mode disabled", ephemeral: true });
+      await interaction.reply({
+        content: "Maintenance mode disabled",
+        ephemeral: true
+      });
       client.user?.setPresence({
-        activities: [{
-          name: "Vibing with MinionAH",
-        }], status: "online"
+        activities: [
+          {
+            name: "Vibing with MinionAH"
+          }
+        ],
+        status: "online"
       });
     }
     setMaintenanceMode(enable);
