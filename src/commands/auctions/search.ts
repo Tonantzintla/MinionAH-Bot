@@ -7,7 +7,20 @@ import resolveMinionEmoji from "$lib/resolveMinionEmoji.js";
 import { kv, maintenanceMode, prisma } from "$src/central.config.js";
 import { client } from "$src/discord/client.js";
 import maintenanceModeEmbed from "$src/discord/maintenanceModeEmbed";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, InteractionResponse, MessageFlags, SlashCommandSubcommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ComponentType,
+  EmbedBuilder,
+  InteractionResponse,
+  MessageFlags,
+  SlashCommandSubcommandBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+  TextInputBuilder,
+  TextInputStyle
+} from "discord.js";
 
 interface DisplayableAuctions {
   minionType: string; // parsed: plaintext-displayable
@@ -36,7 +49,13 @@ const commandParams = {
 export default new SlashCommandSubcommandBuilder()
   .setName("search")
   .setDescription("Search accross the auction house")
-  .addStringOption((option) => option.setName("minion_type").setDescription("The type of the minion to search for").setRequired(false).setAutocomplete(true))
+  .addStringOption((option) =>
+    option
+      .setName("minion_type")
+      .setDescription("The type of the minion to search for")
+      .setRequired(false)
+      .setAutocomplete(true)
+  )
   .addIntegerOption((option) =>
     option
       .setName("minion_tier")
@@ -58,7 +77,9 @@ function displayableMutation(auctions: PrismaAuction[]): DisplayableAuctions[] {
       price: auction.price,
       amount: auction.amount,
       createdAt: new Date(auction.timeCreated).getTime(),
-      lastBumped: auction.timeBumped ? new Date(auction.timeBumped).getTime() : null,
+      lastBumped: auction.timeBumped
+        ? new Date(auction.timeBumped).getTime()
+        : null,
       system: {
         tier: deromanise(auction.minion_id.split(" ").slice(-1)[0]),
         fullType: auction.minion_id
@@ -91,22 +112,39 @@ async function getAuctions(
   let auctions: PrismaAuction[] = await prisma.auction.findMany({
     where: {
       // check for just minion type
-      ...(minionType && !minionTier ? { minion_id: { contains: minionType.toUpperCase() } } : {}),
+      ...(minionType && !minionTier
+        ? { minion_id: { contains: minionType.toUpperCase() } }
+        : {}),
       // check for just minion tier
-      ...(minionTier && !minionType ? { minion_id: { endsWith: "_" + minionTier.toString() } } : {}),
+      ...(minionTier && !minionType
+        ? { minion_id: { endsWith: "_" + minionTier.toString() } }
+        : {}),
       // check for both minion type and tier
-      ...(minionType && minionTier ? { minion_id: { contains: minionType.toUpperCase(), endsWith: "_" + minionTier } } : {})
+      ...(minionType && minionTier
+        ? {
+            minion_id: {
+              contains: minionType.toUpperCase(),
+              endsWith: "_" + minionTier
+            }
+          }
+        : {})
     },
     orderBy: {
       timeCreated: "desc"
     }
   });
   // prisma seems to not be able to filter endsWith properly, this enforces it. do not remove
-  if (minionTier) auctions = auctions.filter((auction) => auction.minion_id.endsWith("_" + minionTier.toString()));
+  if (minionTier)
+    auctions = auctions.filter((auction) =>
+      auction.minion_id.endsWith("_" + minionTier.toString())
+    );
 
   let mutated = displayableMutation(auctions);
   return {
-    auctions: mutated.slice(page * commandParams.auctionsPerPage, (page + 1) * commandParams.auctionsPerPage),
+    auctions: mutated.slice(
+      page * commandParams.auctionsPerPage,
+      (page + 1) * commandParams.auctionsPerPage
+    ),
     minionSum: mutated.reduce((acc, curr) => acc + curr.amount, 0),
     totalAuctions: mutated.length
   };
@@ -114,7 +152,11 @@ async function getAuctions(
 
 async function makeEmbed(
   page: number,
-  { minionType, minionTier, sorting }: { minionType?: string; minionTier?: number; sorting?: "asc" | "desc" }
+  {
+    minionType,
+    minionTier,
+    sorting
+  }: { minionType?: string; minionTier?: number; sorting?: "asc" | "desc" }
 ): Promise<{
   embed: EmbedBuilder;
   auctions: DisplayableAuctions[];
@@ -126,7 +168,10 @@ async function makeEmbed(
     if (!botEmojis) return null;
 
     // fetch auctions
-    const { auctions, minionSum, totalAuctions } = await getAuctions(page, { minionType, minionTier });
+    const { auctions, minionSum, totalAuctions } = await getAuctions(page, {
+      minionType,
+      minionTier
+    });
 
     switch (sorting) {
       case "asc":
@@ -138,15 +183,28 @@ async function makeEmbed(
     }
 
     // for clarity, define the fields for the description
-    const descriptionFields = [`**Auctions:** ${auctions.length}`, `**Minions Found:** ${minionSum}`];
+    const descriptionFields = [
+      `**Auctions:** ${auctions.length}`,
+      `**Minions Found:** ${minionSum}`
+    ];
 
     // mini-function to define the fields for each auction
-    const auctionFields = (action: (typeof auctions)[number]) => [`Price: **${formatMinionPrice(action.price)}**`, `Amount: **${action.amount}**`, `Created: ${`<t:${Math.floor(action.createdAt / 1000)}:R>`}`, action.lastBumped ? `Last Bumped: ${`<t:${Math.floor(action.lastBumped / 1000)}:R>`}` : null].filter(Boolean);
+    const auctionFields = (action: (typeof auctions)[number]) =>
+      [
+        `Price: **${formatMinionPrice(action.price)}**`,
+        `Amount: **${action.amount}**`,
+        `Created: ${`<t:${Math.floor(action.createdAt / 1000)}:R>`}`,
+        action.lastBumped
+          ? `Last Bumped: ${`<t:${Math.floor(action.lastBumped / 1000)}:R>`}`
+          : null
+      ].filter(Boolean);
 
     // construct the embed
     const embed = new EmbedBuilder()
       .setTitle("Auction Search")
-      .setDescription("Here are the search results for the auctions you requested")
+      .setDescription(
+        "Here are the search results for the auctions you requested"
+      )
       .setColor("#262626")
       .setDescription(descriptionFields.join("\n"))
       .addFields(
@@ -174,7 +232,10 @@ function makePagination(currentPage: number, totalAuctions: number) {
       .setStyle(ButtonStyle.Primary)
       .setDisabled(currentPage === 0)
       .setCustomId(`auctions:search:page:previous`),
-    new ButtonBuilder().setLabel("🔢 Go to Page").setStyle(ButtonStyle.Secondary).setCustomId(`auctions:search:page:go-to`),
+    new ButtonBuilder()
+      .setLabel("🔢 Go to Page")
+      .setStyle(ButtonStyle.Secondary)
+      .setCustomId(`auctions:search:page:go-to`),
     new ButtonBuilder()
       .setLabel("Next Page ➡️")
       .setStyle(ButtonStyle.Primary)
@@ -198,7 +259,14 @@ function makeStringSelect(currentSorting?: "asc" | "desc") {
       .setDescription("Sort the auctions in descending order")
       .setEmoji("⬇️")
   ];
-  return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(new StringSelectMenuBuilder().setCustomId("auctions:search:sort").setPlaceholder("Select the sorting order").addOptions(options).setMaxValues(1).setMinValues(1));
+  return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+    new StringSelectMenuBuilder()
+      .setCustomId("auctions:search:sort")
+      .setPlaceholder("Select the sorting order")
+      .addOptions(options)
+      .setMaxValues(1)
+      .setMinValues(1)
+  );
 }
 
 function applyCollectorToStringSelect(reply: InteractionResponse<boolean>) {
@@ -210,7 +278,9 @@ function applyCollectorToStringSelect(reply: InteractionResponse<boolean>) {
 
     collector.on("collect", async (interaction) => {
       const sorting = interaction.values[0] as "asc" | "desc";
-      const data = kv.get<PersistentSearchData>(`auctions:search:${interaction.user.id}`);
+      const data = kv.get<PersistentSearchData>(
+        `auctions:search:${interaction.user.id}`
+      );
       const page = data?.page ?? 0;
       const embedInstance = await makeEmbed(page, {
         minionType: data?.minionType,
@@ -219,7 +289,10 @@ function applyCollectorToStringSelect(reply: InteractionResponse<boolean>) {
       });
 
       if (!embedInstance) {
-        await interaction.reply({ content: "There was an error while executing this command!", flags: MessageFlags.Ephemeral });
+        await interaction.reply({
+          content: "There was an error while executing this command!",
+          flags: MessageFlags.Ephemeral
+        });
         return;
       }
 
@@ -227,9 +300,17 @@ function applyCollectorToStringSelect(reply: InteractionResponse<boolean>) {
 
       const pagination = makePagination(page, totalAuctions);
 
-      kv.set<PersistentSearchData>(`auctions:search:${interaction.user.id}`, { page, minionType: data?.minionType, minionTier: data?.minionTier, sorting });
+      kv.set<PersistentSearchData>(`auctions:search:${interaction.user.id}`, {
+        page,
+        minionType: data?.minionType,
+        minionTier: data?.minionTier,
+        sorting
+      });
 
-      await interaction.update({ embeds: [embed], components: [pagination, makeStringSelect(sorting)] });
+      await interaction.update({
+        embeds: [embed],
+        components: [pagination, makeStringSelect(sorting)]
+      });
     });
   } catch (error) {
     console.error(error);
@@ -241,13 +322,25 @@ function applyCollectorToStringSelect(reply: InteractionResponse<boolean>) {
  */
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
-  if (interaction.commandName !== "auctions" || getSubcommand(interaction) !== "search") return;
+  if (
+    interaction.commandName !== "auctions" ||
+    getSubcommand(interaction) !== "search"
+  )
+    return;
 
   try {
-    if (maintenanceMode) return await interaction.reply({ embeds: [maintenanceModeEmbed], ephemeral: true });
+    if (maintenanceMode)
+      return await interaction.reply({
+        embeds: [maintenanceModeEmbed],
+        ephemeral: true
+      });
     // get filters
-    const minionType = interaction.options.get("minion_type", false)?.value as string | undefined;
-    const minionTier = interaction.options.get("minion_tier", false)?.value as number | undefined;
+    const minionType = interaction.options.get("minion_type", false)?.value as
+      | string
+      | undefined;
+    const minionTier = interaction.options.get("minion_tier", false)?.value as
+      | number
+      | undefined;
 
     // make the embed
     const embedInstance = await makeEmbed(0, {
@@ -256,19 +349,33 @@ client.on("interactionCreate", async (interaction) => {
     });
 
     if (!embedInstance) {
-      await interaction.reply({ content: "There was an error while executing this command!", flags: MessageFlags.Ephemeral });
+      await interaction.reply({
+        content: "There was an error while executing this command!",
+        flags: MessageFlags.Ephemeral
+      });
       return;
     }
 
     const { embed, totalAuctions } = embedInstance;
 
     const pagination = makePagination(0, totalAuctions);
-    kv.set<PersistentSearchData>(`auctions:search:${interaction.user.id}`, { page: 0, minionType, minionTier });
-    const reply = await interaction.reply({ embeds: [embed], components: [pagination, makeStringSelect()], flags: MessageFlags.Ephemeral });
+    kv.set<PersistentSearchData>(`auctions:search:${interaction.user.id}`, {
+      page: 0,
+      minionType,
+      minionTier
+    });
+    const reply = await interaction.reply({
+      embeds: [embed],
+      components: [pagination, makeStringSelect()],
+      flags: MessageFlags.Ephemeral
+    });
     applyCollectorToStringSelect(reply);
   } catch (error) {
     console.error(error);
-    await interaction.reply({ content: "There was an error while executing this command!", flags: MessageFlags.Ephemeral });
+    await interaction.reply({
+      content: "There was an error while executing this command!",
+      flags: MessageFlags.Ephemeral
+    });
   }
 });
 
@@ -279,8 +386,15 @@ client.on("interactionCreate", async (interaction) => {
   if (!interaction.isButton()) return;
   if (!interaction.customId.startsWith("auctions:search:page")) return;
   try {
-    if (maintenanceMode) return await interaction.reply({ embeds: [maintenanceModeEmbed], ephemeral: true });
-    const action = interaction.customId.split(":")[3] as "previous" | "next" | "go-to";
+    if (maintenanceMode)
+      return await interaction.reply({
+        embeds: [maintenanceModeEmbed],
+        ephemeral: true
+      });
+    const action = interaction.customId.split(":")[3] as
+      | "previous"
+      | "next"
+      | "go-to";
     const user = interaction.user.id;
     const data = kv.get<PersistentSearchData>(`auctions:search:${user}`);
     let page = data?.page ?? 0;
@@ -298,7 +412,14 @@ client.on("interactionCreate", async (interaction) => {
           components: [
             {
               type: ComponentType.ActionRow,
-              components: [new TextInputBuilder().setCustomId("auctions:search:page:jump-input").setLabel("Page Number").setStyle(TextInputStyle.Short).setPlaceholder("Type the page number").setRequired(true)]
+              components: [
+                new TextInputBuilder()
+                  .setCustomId("auctions:search:page:jump-input")
+                  .setLabel("Page Number")
+                  .setStyle(TextInputStyle.Short)
+                  .setPlaceholder("Type the page number")
+                  .setRequired(true)
+              ]
             }
           ]
         });
@@ -311,7 +432,10 @@ client.on("interactionCreate", async (interaction) => {
     });
 
     if (!embedInstance) {
-      await interaction.reply({ content: "There was an error while executing this command!", flags: MessageFlags.Ephemeral });
+      await interaction.reply({
+        content: "There was an error while executing this command!",
+        flags: MessageFlags.Ephemeral
+      });
       return;
     }
 
@@ -325,11 +449,17 @@ client.on("interactionCreate", async (interaction) => {
       minionTier: data?.minionTier,
       sorting: data?.sorting
     });
-    const reply = await interaction.update({ embeds: [embed], components: [pagination, makeStringSelect(data?.sorting)] });
+    const reply = await interaction.update({
+      embeds: [embed],
+      components: [pagination, makeStringSelect(data?.sorting)]
+    });
     applyCollectorToStringSelect(reply);
   } catch (error) {
     console.error(error);
-    await interaction.reply({ content: "There was an error while executing this command!", flags: MessageFlags.Ephemeral });
+    await interaction.reply({
+      content: "There was an error while executing this command!",
+      flags: MessageFlags.Ephemeral
+    });
   }
 });
 
@@ -340,11 +470,21 @@ client.on("interactionCreate", async (interaction) => {
   if (!interaction.isModalSubmit()) return;
   if (!interaction.customId.startsWith("auctions:search:page:jump")) return;
   try {
-    if (maintenanceMode) return await interaction.reply({ embeds: [maintenanceModeEmbed], ephemeral: true });
+    if (maintenanceMode)
+      return await interaction.reply({
+        embeds: [maintenanceModeEmbed],
+        ephemeral: true
+      });
     // get the page number
-    const page = parseInt(interaction.fields.getTextInputValue("auctions:search:page:jump-input")) - 1;
+    const page =
+      parseInt(
+        interaction.fields.getTextInputValue("auctions:search:page:jump-input")
+      ) - 1;
     if (isNaN(page)) {
-      await interaction.reply({ content: "Invalid page number!", flags: MessageFlags.Ephemeral });
+      await interaction.reply({
+        content: "Invalid page number!",
+        flags: MessageFlags.Ephemeral
+      });
       return;
     }
     // get the user
@@ -357,7 +497,10 @@ client.on("interactionCreate", async (interaction) => {
     });
 
     if (!embedInstance) {
-      await interaction.reply({ content: "There was an error while executing this command!", flags: MessageFlags.Ephemeral });
+      await interaction.reply({
+        content: "There was an error while executing this command!",
+        flags: MessageFlags.Ephemeral
+      });
       return;
     }
 
@@ -372,10 +515,17 @@ client.on("interactionCreate", async (interaction) => {
       sorting: data?.sorting
     });
 
-    const reply = await interaction.reply({ embeds: [embed], components: [pagination, makeStringSelect()], flags: MessageFlags.Ephemeral });
+    const reply = await interaction.reply({
+      embeds: [embed],
+      components: [pagination, makeStringSelect()],
+      flags: MessageFlags.Ephemeral
+    });
     applyCollectorToStringSelect(reply);
   } catch (error) {
     console.error(error);
-    await interaction.reply({ content: "There was an error while executing this command!", flags: MessageFlags.Ephemeral });
+    await interaction.reply({
+      content: "There was an error while executing this command!",
+      flags: MessageFlags.Ephemeral
+    });
   }
 });

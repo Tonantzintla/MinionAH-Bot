@@ -28,10 +28,19 @@ export default async (req: e.Request, res: e.Response) => {
 };
 
 function getNotificationEmbed(data: z.infer<typeof notif_test_schemaZod>) {
-  return new EmbedBuilder().setTitle("Example Notification").setColor("#262626").setThumbnail(`${process.env.CLOUDINARY_URL}/image/upload/v1/users/avatars/${data.senderID}`).setDescription(`Hello <@${data.receiverDiscordID}>,\n\n If you can see this message, the bot can send you notifications successfully.`);
+  return new EmbedBuilder()
+    .setTitle("Example Notification")
+    .setColor("#262626")
+    .setThumbnail(
+      `${process.env.CLOUDINARY_URL}/image/upload/v1/users/avatars/${data.senderID}`
+    )
+    .setDescription(
+      `Hello <@${data.receiverDiscordID}>,\n\n If you can see this message, the bot can send you notifications successfully.`
+    );
 }
 
 async function getDMChannel(user: string) {
-  const userObj = client.users.cache.get(user) || (await client.users.fetch(user));
+  const userObj =
+    client.users.cache.get(user) || (await client.users.fetch(user));
   return userObj.dmChannel || (await userObj.createDM());
 }

@@ -1,6 +1,12 @@
 import notif_send_schemaZod from "$rest/zod/notifications/notif_send_schema.zod.js";
 import { client } from "$src/discord/client.js";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, DiscordAPIError, EmbedBuilder } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  DiscordAPIError,
+  EmbedBuilder
+} from "discord.js";
 import e from "express";
 import { z } from "zod";
 
@@ -31,7 +37,15 @@ export default async (req: e.Request, res: e.Response) => {
 };
 
 function getNotificationEmbed(data: z.infer<typeof notif_send_schemaZod>) {
-  return new EmbedBuilder().setTitle("You have a new message").setColor("#262626").setThumbnail(`${process.env.CLOUDINARY_URL}/image/upload/v1/users/avatars/${data.senderID}`).setDescription(`Hello <@${data.receiverDiscordID}>,\n\n**${data.senderUsername}** has sent you a message`);
+  return new EmbedBuilder()
+    .setTitle("You have a new message")
+    .setColor("#262626")
+    .setThumbnail(
+      `${process.env.CLOUDINARY_URL}/image/upload/v1/users/avatars/${data.senderID}`
+    )
+    .setDescription(
+      `Hello <@${data.receiverDiscordID}>,\n\n**${data.senderUsername}** has sent you a message`
+    );
 }
 
 function getButtonRow(data: z.infer<typeof notif_send_schemaZod>) {
@@ -52,6 +66,7 @@ function getButtonRow(data: z.infer<typeof notif_send_schemaZod>) {
 }
 
 async function getDMChannel(user: string) {
-  const userObj = client.users.cache.get(user) || (await client.users.fetch(user));
+  const userObj =
+    client.users.cache.get(user) || (await client.users.fetch(user));
   return userObj.dmChannel || (await userObj.createDM());
 }

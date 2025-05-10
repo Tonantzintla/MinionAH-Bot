@@ -1,1 +1,1 @@
-import "./minionTypeAutocomplete.js"
+import "./minionTypeAutocomplete.js";

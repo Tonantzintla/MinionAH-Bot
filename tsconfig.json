@@ -14,7 +14,7 @@
       "$generated/*": ["./src/generated/*"],
       "$lib/*": ["./src/lib/*"],
       "$src/*": ["./src/*"],
-      "$rest/*": ["./src/rest/*"],
+      "$rest/*": ["./src/rest/*"]
     }
   }
 }

@@ -7,13 +7,13 @@ import { client } from "./discord/client.js";
 import "./global-listeners/imports.js";
 
 // --- express
-const app = express()
+const app = express();
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-app.use(authMiddleware)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(authMiddleware);
 
-app.use(rootRouter)
+app.use(rootRouter);
 
 // --- init
 client.on("ready", async (bot) => {
@@ -22,4 +22,6 @@ client.on("ready", async (bot) => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
-app.listen(process.env.WEB_PORT, () => console.log(`Server running on port ${process.env.WEB_PORT}`))
+app.listen(process.env.WEB_PORT, () =>
+  console.log(`Server running on port ${process.env.WEB_PORT}`)
+);

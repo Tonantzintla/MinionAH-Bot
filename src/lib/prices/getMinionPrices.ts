@@ -9,11 +9,22 @@ interface MinionPrices {
   craftCost: number;
 }
 
-export default async function getMinionPrices(filter?: string, tier?: number): Promise<MinionPrices[] | null> {
+export default async function getMinionPrices(
+  filter?: string,
+  tier?: number
+): Promise<MinionPrices[] | null> {
   try {
     const minionPrices = await prisma.minion.findMany();
-    const filtered = filter && filter !== "_none" ? minionPrices.filter((minion) => minion.name.toLowerCase().includes(filter.toLowerCase())) : minionPrices;
-    const filteredTiers = tier && tier !== -1 ? filtered.filter((minion) => minion.generator_tier === tier) : filtered;
+    const filtered =
+      filter && filter !== "_none"
+        ? minionPrices.filter((minion) =>
+            minion.name.toLowerCase().includes(filter.toLowerCase())
+          )
+        : minionPrices;
+    const filteredTiers =
+      tier && tier !== -1
+        ? filtered.filter((minion) => minion.generator_tier === tier)
+        : filtered;
     return filteredTiers;
   } catch (error) {
     console.error("Error in getMinionPrices: ", error);

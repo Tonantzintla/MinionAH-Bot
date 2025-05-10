@@ -26,7 +26,8 @@
     "prod": "bun ./src",
     "dev": "bunx nodemon -e ts --watch 'src/**/*.ts' --exec 'bun ./src'",
     "dev:prod": "dotenv -e .env -- bunx nodemon -e ts --watch 'src/**/*.ts' --exec 'bun ./src'",
-    "lint": "prettier --check . && eslint ."
+    "lint": "prettier --check . && eslint .",
+    "format": "prettier --write ."
   },
   "engines": {
     "node": "^22",
