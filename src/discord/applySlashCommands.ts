@@ -12,6 +12,10 @@ export default async function applySlashCommands() {
         { body: [] },
       );
     }
+    // delete all global commands
+    await rest.put(Routes.applicationCommands(process.env.APP_ID!), {
+      body: []
+    });
     // register new global commands
     await rest.put(Routes.applicationCommands(process.env.APP_ID!), {
       body: commands
