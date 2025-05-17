@@ -9,7 +9,7 @@ export default async function applySlashCommands() {
     for (const guild of client.guilds.cache.values()) {
       await rest.put(
         Routes.applicationGuildCommands(process.env.APP_ID!, guild.id),
-        { body: [] },
+        { body: [] }
       );
     }
     // delete all global commands
