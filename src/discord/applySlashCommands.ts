@@ -1,16 +1,22 @@
-import commands from "$src/commands/commands.js";
+import commands from "$src/commands/commands";
 import { REST, Routes } from "discord.js";
+import { client } from "./client";
 
 export default async function applySlashCommands() {
   const rest = new REST({ version: "9" }).setToken(process.env.DISCORD_TOKEN!);
   try {
-    // for (const guild of client.guilds.cache.values()) {
-    //     await rest.put(
-    //         Routes.applicationGuildCommands(process.env.APP_ID!, guild.id),
-    //         { body: commands },
-    //     );
-    // }
-    // apply to global commands
+    // delete all commands from all guilds - migration to global commands
+    for (const guild of client.guilds.cache.values()) {
+      await rest.put(
+        Routes.applicationGuildCommands(process.env.APP_ID!, guild.id),
+        { body: [] }
+      );
+    }
+    // delete all global commands
+    await rest.put(Routes.applicationCommands(process.env.APP_ID!), {
+      body: []
+    });
+    // register new global commands
     await rest.put(Routes.applicationCommands(process.env.APP_ID!), {
       body: commands
     });
