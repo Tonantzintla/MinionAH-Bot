@@ -17,7 +17,6 @@ export default new SlashCommandBuilder()
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
   if (interaction.commandName !== "maintenance") return;
-  console.log(interaction.user.id)
   if (interaction.user.id !== process.env.ADMIN_ID) return;
   try {
     if (interaction.options.get("enable")?.value === null) {
