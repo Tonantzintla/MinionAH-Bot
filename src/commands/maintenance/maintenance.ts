@@ -17,7 +17,13 @@ export default new SlashCommandBuilder()
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
   if (interaction.commandName !== "maintenance") return;
-  if (interaction.user.id !== process.env.ADMIN_ID) return;
+  if (interaction.user.id !== process.env.ADMIN_ID) {
+    console.log("ADMIN ID MISMATCH:", interaction.user.id, process.env.ADMIN_ID);
+    return await interaction.reply({
+      content: "You are not authorized to use this command",
+      ephemeral: true
+    });
+  }
   try {
     if (interaction.options.get("enable")?.value === null) {
       await interaction.reply({
