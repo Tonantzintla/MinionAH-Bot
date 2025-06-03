@@ -2,7 +2,7 @@ import zod from "zod";
 export default zod.object({
   receiverDiscordID: zod
     .string()
-    .regex(/^\d{18}$/, "Discord ID must be an 18 digit string."),
+    .regex(/^\d{17,19}$/, "Discord ID must be a valid 17-19 digit number"),
   senderUsername: zod.string(),
   senderID: zod
     .string()
