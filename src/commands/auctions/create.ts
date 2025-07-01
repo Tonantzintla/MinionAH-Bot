@@ -201,10 +201,10 @@ client.on("interactionCreate", async (interaction) => {
     // organize props
     const props = [
       "⚙️ Minion Type ~ " +
-      resolveMinionEmoji(minionTypeValidation.validMinionID!, systemEmojis) +
-      " " +
-      minionTypeCapitalized +
-      ` ${opts.tier}`,
+        resolveMinionEmoji(minionTypeValidation.validMinionID!, systemEmojis) +
+        " " +
+        minionTypeCapitalized +
+        ` ${opts.tier}`,
       "🔢 Minions Amount ~ " + opts.amount,
       "💵 Starting Price ~ " + opts.price + " Coins",
       "⚡ Mithril Infusion ~ " + (opts.mithrilInfused ? "✅" : "⛔"),
