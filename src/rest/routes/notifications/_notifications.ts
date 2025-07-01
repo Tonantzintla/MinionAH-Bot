@@ -11,6 +11,10 @@ const notifications = e.Router();
 
 notifications.post("/send", zodMW(notif_send_schemaZod), send);
 notifications.post("/test", zodMW(notif_test_schemaZod), test);
-notifications.post("/expiring_auctions", zodMW(notif_expiring_auctions_schemaZod), expiring_auctions)
+notifications.post(
+  "/expiring_auctions",
+  zodMW(notif_expiring_auctions_schemaZod),
+  expiring_auctions
+);
 
 export default notifications;
