@@ -44,7 +44,8 @@ client.on("interactionCreate", async (interaction) => {
 
     await interaction.reply({
       embeds: [embed],
-      components: [actionRow]
+      components: [actionRow],
+      ephemeral: true
     });
   } catch (error) {
     console.error(error);
