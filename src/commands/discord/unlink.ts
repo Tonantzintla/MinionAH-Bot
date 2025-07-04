@@ -46,10 +46,9 @@ client.on("interactionCreate", async (interaction) => {
         .setCustomId("discord-integration:unlink-cancel:" + interaction.user.id)
     );
 
-    const _reply = await interaction.reply({
+    await interaction.reply({
       embeds: [warningEmbed],
-      components: [actionRow],
-      ephemeral: true
+      components: [actionRow]
     });
   } catch (error) {
     console.error(error);
