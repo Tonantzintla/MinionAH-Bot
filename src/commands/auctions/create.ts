@@ -143,8 +143,7 @@ client.on("interactionCreate", async (interaction) => {
         false,
       negotiable:
         (interaction.options.get("negotiable", false)?.value as boolean) ??
-        false,
-      _discordExecutor: interaction.user.id // discord ID of the user initiating the auction creation
+        false
     };
 
     const minionTypeValidation = await validatePlaintextMinionType(
@@ -273,12 +272,6 @@ client.on("interactionCreate", async (interaction) => {
         content: "The auction you are interacting with has expired.",
         ephemeral: true
       });
-    if (opts._discordExecutor !== interaction.user.id) {
-      return await interaction.reply({
-        content: "You are not allowed to interact with this auction.",
-        ephemeral: true
-      });
-    }
     switch (action) {
       case "confirm": {
         const auctionBodyMapped: AuctionCreationBody = {
@@ -334,13 +327,15 @@ client.on("interactionCreate", async (interaction) => {
           }
         });
         await interaction.reply({
-          content: "Auction confirmed!"
+          content: "Auction confirmed!",
+          ephemeral: true
         });
         break;
       }
       case "cancel":
         await interaction.reply({
-          content: "Auction cancelled!"
+          content: "Auction cancelled!",
+          ephemeral: true
         });
         break;
     }

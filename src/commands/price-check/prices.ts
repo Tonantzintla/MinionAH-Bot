@@ -200,7 +200,8 @@ client.on("interactionCreate", async (interaction) => {
   try {
     if (maintenanceMode)
       return await interaction.reply({
-        embeds: [maintenanceModeEmbed]
+        embeds: [maintenanceModeEmbed],
+        ephemeral: true
       });
     // get prices
     const filter =
@@ -231,7 +232,8 @@ client.on("interactionCreate", async (interaction) => {
           filter,
           tier
         )
-      ]
+      ],
+      ephemeral: true
     });
   } catch (error) {
     console.error("Error in prices command: ", error);
@@ -251,7 +253,8 @@ client.on("interactionCreate", async (interaction) => {
   try {
     if (maintenanceMode)
       return await interaction.reply({
-        embeds: [maintenanceModeEmbed]
+        embeds: [maintenanceModeEmbed],
+        ephemeral: true
       });
     // get the page number
     const pageNumber = parseInt(interaction.customId.split(":")[3]);
@@ -385,6 +388,7 @@ client.on("interactionCreate", async (interaction) => {
     // edit the message
     await interaction.reply({
       embeds: [page],
+      ephemeral: true,
       components: [
         constructLocalPagination(
           pageNumber - 1,
