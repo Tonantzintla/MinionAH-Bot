@@ -1,5 +1,5 @@
 import notif_send_schemaZod from "$rest/zod/notifications/notif_send_schema.zod.js";
-import { client } from "$src/discord/client.js";
+import { getDMChannel } from "$src/discord/getDMChannel";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -63,10 +63,4 @@ function getButtonRow(data: z.infer<typeof notif_send_schemaZod>) {
   return new ActionRowBuilder<ButtonBuilder>({
     components: [chatBtn, manageBtn]
   });
-}
-
-async function getDMChannel(user: string) {
-  const userObj =
-    client.users.cache.get(user) || (await client.users.fetch(user));
-  return userObj.dmChannel || (await userObj.createDM());
 }
