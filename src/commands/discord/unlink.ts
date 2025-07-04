@@ -46,10 +46,9 @@ client.on("interactionCreate", async (interaction) => {
         .setCustomId("discord-integration:unlink-cancel:" + interaction.user.id)
     );
 
-    const _reply = await interaction.reply({
+    await interaction.reply({
       embeds: [warningEmbed],
       components: [actionRow],
-      ephemeral: true
     });
   } catch (error) {
     console.error(error);
@@ -79,7 +78,6 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.reply({
         embeds: [responseEmbed],
         components: [],
-        ephemeral: true
       });
       return;
     }
