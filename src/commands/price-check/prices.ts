@@ -232,8 +232,7 @@ client.on("interactionCreate", async (interaction) => {
           filter,
           tier
         )
-      ],
-      ephemeral: true
+      ]
     });
   } catch (error) {
     console.error("Error in prices command: ", error);
@@ -388,7 +387,6 @@ client.on("interactionCreate", async (interaction) => {
     // edit the message
     await interaction.reply({
       embeds: [page],
-      ephemeral: true,
       components: [
         constructLocalPagination(
           pageNumber - 1,

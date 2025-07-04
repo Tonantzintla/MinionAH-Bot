@@ -7,5 +7,6 @@ export namespace Auction {
     mithrilInfused: boolean;
     freeWill: boolean;
     negotiable: boolean;
+    _discordExecutor: string; // discord ID of the user initiating the auction creation
   }
 }
