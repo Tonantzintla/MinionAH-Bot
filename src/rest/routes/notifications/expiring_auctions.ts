@@ -70,7 +70,7 @@ async function getNotificationEmbed(
     .setDescription(
       [
         `Hello <@${receiverDiscordID}>,`,
-        `${auctions.length} of your auctions are about to expire!`,
+        `${auctions.length} of your auctions ${auctions.length > 1 ? "are" : "is"} expiring soon!`,
         auctionsDetails.join("\n")
       ].join("\n\n")
     )
