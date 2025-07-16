@@ -10,6 +10,6 @@
   },
   "git.autofetch": true,
   "javascript.updateImportsOnFileMove.enabled": "prompt",
-  "typescript.updateImportsOnFileMove.enabled": "prompt",
+  "typescript.updateImportsOnFileMove.enabled": "always",
   "eslint.validate": ["javascript", "typescript"]
 }
