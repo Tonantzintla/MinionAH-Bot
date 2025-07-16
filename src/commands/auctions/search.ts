@@ -122,11 +122,11 @@ async function getAuctions(
       // check for both minion type and tier
       ...(minionType && minionTier
         ? {
-            minion_id: {
-              contains: minionType.toUpperCase(),
-              endsWith: "_" + minionTier
-            }
+          minion_id: {
+            contains: minionType.toUpperCase(),
+            endsWith: "_" + minionTier
           }
+        }
         : {})
     },
     orderBy: {
@@ -366,8 +366,7 @@ client.on("interactionCreate", async (interaction) => {
     });
     const reply = await interaction.reply({
       embeds: [embed],
-      components: [pagination, makeStringSelect()],
-      flags: MessageFlags.Ephemeral
+      components: [pagination, makeStringSelect()]
     });
     applyCollectorToStringSelect(reply);
   } catch (error) {
@@ -518,7 +517,6 @@ client.on("interactionCreate", async (interaction) => {
     const reply = await interaction.reply({
       embeds: [embed],
       components: [pagination, makeStringSelect()],
-      flags: MessageFlags.Ephemeral
     });
     applyCollectorToStringSelect(reply);
   } catch (error) {
