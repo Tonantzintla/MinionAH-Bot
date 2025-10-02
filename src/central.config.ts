@@ -1,4 +1,4 @@
-import { PrismaClient } from "$generated/prisma";
+import { PrismaClient } from "$generated/prisma/client";
 import NodeCache from "node-cache";
 
 export let maintenanceMode = false;
