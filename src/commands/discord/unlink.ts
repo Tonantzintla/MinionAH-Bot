@@ -48,7 +48,7 @@ client.on("interactionCreate", async (interaction) => {
 
     await interaction.reply({
       embeds: [warningEmbed],
-      components: [actionRow],
+      components: [actionRow]
     });
   } catch (error) {
     console.error(error);
@@ -77,7 +77,7 @@ client.on("interactionCreate", async (interaction) => {
 
       await interaction.reply({
         embeds: [responseEmbed],
-        components: [],
+        components: []
       });
       return;
     }
