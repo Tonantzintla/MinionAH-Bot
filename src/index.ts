@@ -17,7 +17,7 @@ app.use(authMiddleware);
 app.use(rootRouter);
 
 // --- init
-client.on("clientReady", async () => {
+client.on("ready", async () => {
   console.log(`Bot ready! Process ID: ${process.pid}`);
   await applySlashCommands();
 });

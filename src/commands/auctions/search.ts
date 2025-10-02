@@ -1,4 +1,4 @@
-import { Auction as PrismaAuction } from "$generated/prisma/client";
+import { Auction as PrismaAuction } from "$generated/prisma";
 import parseMinionType from "$lib/auctions/parseMinionType.js";
 import getSubcommand from "$lib/getSubcommand.js";
 import deromanise from "$lib/prices/deromanise.js";
@@ -45,10 +45,6 @@ interface PersistentSearchData {
 const commandParams = {
   auctionsPerPage: 12
 };
-
-/**
- * LEGACY COMMAND: Processor of the /auctions search command
- */
 
 export default new SlashCommandSubcommandBuilder()
   .setName("search")
@@ -520,7 +516,7 @@ client.on("interactionCreate", async (interaction) => {
 
     const reply = await interaction.reply({
       embeds: [embed],
-      components: [pagination, makeStringSelect()]
+      components: [pagination, makeStringSelect()],
     });
     applyCollectorToStringSelect(reply);
   } catch (error) {
