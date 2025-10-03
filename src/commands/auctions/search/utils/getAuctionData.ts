@@ -49,7 +49,27 @@ export default async function getAuctionData({
     _sum: {
       amount: true
     },
-    _count: true
+    _count: true,
+    where: {
+      // check for just minion type
+      ...(minionType && !minionTier
+        ? { minion_id: { contains: minionType.toUpperCase() } }
+        : {}),
+      // check for just minion tier
+      ...(minionTier && !minionType
+        ? { minion_id: { endsWith: "\\_" + minionTier.toString() } }
+        : {}),
+      // check for both minion type and tier
+      ...(minionType && minionTier
+        ? {
+          minion_id: {
+            contains: minionType.toUpperCase(),
+            endsWith: "\\_" + minionTier
+          }
+        }
+        : {})
+    }
+
   });
 
   const [auctions, auctionStatsResult] = await Promise.all([
