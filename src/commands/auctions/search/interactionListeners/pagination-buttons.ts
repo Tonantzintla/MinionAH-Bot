@@ -1,7 +1,7 @@
 import { client } from "$src/discord/client";
-import checkMaintenanceMode from "$src/shared/checkMaintenanceMode";
+import checkMaintenanceMode from "$src/shared/utils/checkMaintenanceMode";
 import { ComponentType, TextInputBuilder, TextInputStyle } from "discord.js";
-import SearchSequence from "../util/SearchSequence";
+import SearchSequence from "../utils/SearchSequence";
 
 /**
  * Decodes pagination button interactions and navigates to the appropriate page.

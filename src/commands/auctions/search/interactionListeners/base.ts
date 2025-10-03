@@ -1,9 +1,9 @@
 import getSubcommand from "$lib/getSubcommand";
 import { client } from "$src/discord/client";
-import checkMaintenanceMode from "$src/shared/checkMaintenanceMode";
+import checkMaintenanceMode from "$src/shared/utils/checkMaintenanceMode";
 import { MessageFlags, PrimaryEntryPointCommandInteraction } from "discord.js";
-import SearchSequence from "../util/SearchSequence";
-import applyValueCollectorToSortingOrderSelector from "../util/applyValueCollectorToSortingOrderSelector";
+import SearchSequence from "../utils/SearchSequence";
+import applyValueCollectorToSortingOrderSelector from "../utils/applyValueCollectorToSortingOrderSelector";
 
 /**
  * Listens for the /auctions search command and initiates the search sequence.

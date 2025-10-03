@@ -1,8 +1,8 @@
 import { client } from "$src/discord/client";
-import checkMaintenanceMode from "$src/shared/checkMaintenanceMode";
+import checkMaintenanceMode from "$src/shared/utils/checkMaintenanceMode";
 import { MessageFlags } from "discord.js";
-import SearchSequence from "../util/SearchSequence";
-import applyValueCollectorToSortingOrderSelector from "../util/applyValueCollectorToSortingOrderSelector";
+import SearchSequence from "../utils/SearchSequence";
+import applyValueCollectorToSortingOrderSelector from "../utils/applyValueCollectorToSortingOrderSelector";
 
 /**
  * Processes the input from the page jump modal and navigates to the specified page.

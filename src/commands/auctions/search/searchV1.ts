@@ -15,6 +15,7 @@ import {
   EmbedBuilder,
   InteractionResponse,
   MessageFlags,
+  PrimaryEntryPointCommandInteraction,
   SlashCommandSubcommandBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
@@ -326,6 +327,7 @@ function applyCollectorToStringSelect(reply: InteractionResponse<boolean>) {
  */
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
+  if (interaction instanceof PrimaryEntryPointCommandInteraction) return;
   if (
     interaction.commandName !== "auctions" ||
     getSubcommand(interaction) !== "search"
