@@ -24,14 +24,14 @@ export default async function getAuctionData({
         : {}),
       // check for just minion tier
       ...(minionTier && !minionType
-        ? { minion_id: { endsWith: "_" + minionTier.toString() } }
+        ? { minion_id: { endsWith: "\\_" + minionTier.toString() } }
         : {}),
       // check for both minion type and tier
       ...(minionType && minionTier
         ? {
           minion_id: {
             contains: minionType.toUpperCase(),
-            endsWith: "_" + minionTier
+            endsWith: "\\_" + minionTier
           }
         }
         : {})
@@ -44,6 +44,7 @@ export default async function getAuctionData({
     take: auctionsPerPage,
     skip: (page - 1) * auctionsPerPage
   });
+
   const auctionStatsPromise = prisma.auction.aggregate({
     _sum: {
       amount: true

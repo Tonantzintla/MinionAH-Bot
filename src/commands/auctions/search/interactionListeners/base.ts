@@ -1,7 +1,7 @@
 import getSubcommand from "$lib/getSubcommand";
 import { client } from "$src/discord/client";
 import checkMaintenanceMode from "$src/shared/checkMaintenanceMode";
-import { MessageFlags } from "discord.js";
+import { MessageFlags, PrimaryEntryPointCommandInteraction } from "discord.js";
 import SearchSequence from "../util/SearchSequence";
 import applyValueCollectorToSortingOrderSelector from "../util/applyValueCollectorToSortingOrderSelector";
 
@@ -11,6 +11,7 @@ import applyValueCollectorToSortingOrderSelector from "../util/applyValueCollect
  */
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isCommand()) return;
+    if (interaction instanceof PrimaryEntryPointCommandInteraction) return;
     if (
         interaction.commandName !== "auctions" ||
         getSubcommand(interaction) !== "search"
@@ -22,7 +23,8 @@ client.on("interactionCreate", async (interaction) => {
         const searchSequence = SearchSequence.getSequence({
             username: interaction.user.username,
             minionType: interaction.options.get("minion_type")?.value as string || undefined,
-            minionTier: interaction.options.get("minion_tier")?.value as number || undefined
+            minionTier: interaction.options.get("minion_tier")?.value as number || undefined,
+            explicitlyCreate: true
         });
         const reply = await interaction.reply({
             components: [
