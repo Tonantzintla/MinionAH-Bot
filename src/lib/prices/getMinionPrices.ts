@@ -1,3 +1,4 @@
+import { MinionOrderByWithRelationInput } from "$generated/prisma/models";
 import { prisma } from "$src/central.config";
 
 interface MinionPrices {
@@ -11,15 +12,18 @@ interface MinionPrices {
 
 export default async function getMinionPrices(
   filter?: string,
-  tier?: number
+  tier?: number,
+  orderBy?: MinionOrderByWithRelationInput | MinionOrderByWithRelationInput[]
 ): Promise<MinionPrices[] | null> {
   try {
-    const minionPrices = await prisma.minion.findMany();
+    const minionPrices = await prisma.minion.findMany({
+      orderBy,
+    });
     const filtered =
       filter && filter !== "_none"
         ? minionPrices.filter((minion) =>
-            minion.name.toLowerCase().includes(filter.toLowerCase())
-          )
+          minion.name.toLowerCase().includes(filter.toLowerCase())
+        )
         : minionPrices;
     const filteredTiers =
       tier && tier !== -1
