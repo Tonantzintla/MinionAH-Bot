@@ -5,7 +5,6 @@ import PriceCheckSequence from "../utils/PriceCheckSequence";
 
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isCommand()) return;
-    console.log(interaction.commandName)
     if (interaction.commandName !== "prices") return;
     if (interaction instanceof PrimaryEntryPointCommandInteraction) return;
 
