@@ -9,6 +9,7 @@ import { invalidAuctionCreateDisplayContainer, noLinkedMinionAHAccountFoundDispl
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isCommand()) return;
     if (interaction instanceof PrimaryEntryPointCommandInteraction) return;
+    if (interaction.commandName !== "auctions") return;
     if (getSubcommand(interaction) !== "create") return;
 
     // we dont do anything with this object. but its existence validates
