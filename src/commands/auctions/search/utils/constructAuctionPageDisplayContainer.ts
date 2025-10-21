@@ -33,6 +33,12 @@ export default async function constructAuctionPageDisplayContainer({
 
   if (!botEmojis) throw new Error("Bot emojis not found");
 
+  const auctionsTextDisplay = auctions.length > 0
+    ? auctions
+      .map((auction, _) => constructAuctionDisplay(auction, botEmojis))
+      .join("\n\n")
+    : "No auctions found for the given criteria.";
+
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
       (t) => t.setContent(`### ${title || "Auction Search"}`),
@@ -47,9 +53,7 @@ export default async function constructAuctionPageDisplayContainer({
     .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small))
     .addTextDisplayComponents((t) =>
       t.setContent(
-        auctions
-          .map((auction, _) => constructAuctionDisplay(auction, botEmojis))
-          .join("\n\n")
+        auctionsTextDisplay
       )
     )
     .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Small))
