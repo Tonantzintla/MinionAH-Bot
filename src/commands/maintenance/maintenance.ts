@@ -2,7 +2,11 @@ import { setMaintenanceMode } from "$src/central.config";
 import { client } from "$src/discord/client";
 import genericErrorContainer from "$src/shared/displayContainers/genericErrorContainer";
 import unauthorizedCommandContainer from "$src/shared/displayContainers/unauthorizedCommandContainer";
-import { MessageFlags, PrimaryEntryPointCommandInteraction, SlashCommandBuilder } from "discord.js";
+import {
+  MessageFlags,
+  PrimaryEntryPointCommandInteraction,
+  SlashCommandBuilder
+} from "discord.js";
 
 export default new SlashCommandBuilder()
   .setName("maintenance")

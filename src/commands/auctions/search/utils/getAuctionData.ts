@@ -29,18 +29,14 @@ export default async function getAuctionData({
       // check for both minion type and tier
       ...(minionType && minionTier
         ? {
-          minion_id: {
-            contains: minionType.toUpperCase(),
-            endsWith: "\\_" + minionTier
+            minion_id: {
+              contains: minionType.toUpperCase(),
+              endsWith: "\\_" + minionTier
+            }
           }
-        }
         : {})
     },
-    ...(
-      sortingOrder
-        ? { orderBy: { timeCreated: sortingOrder } }
-        : {}
-    ),
+    ...(sortingOrder ? { orderBy: { timeCreated: sortingOrder } } : {}),
     take: auctionsPerPage,
     skip: (page - 1) * auctionsPerPage
   });
@@ -62,14 +58,13 @@ export default async function getAuctionData({
       // check for both minion type and tier
       ...(minionType && minionTier
         ? {
-          minion_id: {
-            contains: minionType.toUpperCase(),
-            endsWith: "\\_" + minionTier
+            minion_id: {
+              contains: minionType.toUpperCase(),
+              endsWith: "\\_" + minionTier
+            }
           }
-        }
         : {})
     }
-
   });
 
   const [auctions, auctionStatsResult] = await Promise.all([

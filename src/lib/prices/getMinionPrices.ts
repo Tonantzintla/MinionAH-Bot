@@ -17,13 +17,13 @@ export default async function getMinionPrices(
 ): Promise<MinionPrices[] | null> {
   try {
     const minionPrices = await prisma.minion.findMany({
-      orderBy,
+      orderBy
     });
     const filtered =
       filter && filter !== "_none"
         ? minionPrices.filter((minion) =>
-          minion.name.toLowerCase().includes(filter.toLowerCase())
-        )
+            minion.name.toLowerCase().includes(filter.toLowerCase())
+          )
         : minionPrices;
     const filteredTiers =
       tier && tier !== -1
