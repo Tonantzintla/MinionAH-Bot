@@ -4,7 +4,7 @@ export default new ContainerBuilder()
   .addTextDisplayComponents((t) => t.setContent("### An Error Occurred"))
   .addTextDisplayComponents((t) =>
     t.setContent(
-      "Sorry, something went wrong while processing your request. Please contact @andriotis to deal with the mess"
+      "Sorry, something went wrong while processing your request. Please contact @andriotis and tell him to deal with the mess"
     )
   )
   .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large))
