@@ -1,4 +1,5 @@
 import { client } from "$src/discord/client";
+import genericErrorContainer from "$src/shared/displayContainers/genericErrorContainer";
 import checkMaintenanceMode from "$src/shared/utils/checkMaintenanceMode";
 import { MessageFlags, PrimaryEntryPointCommandInteraction } from "discord.js";
 import PriceCheckSequence from "../utils/PriceCheckSequence";
@@ -31,5 +32,9 @@ client.on("interactionCreate", async (interaction) => {
     });
   } catch (error) {
     console.error("Error handling price-check interaction:", error);
+    await interaction.reply({
+      components: [genericErrorContainer],
+      flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2]
+    });
   }
 });

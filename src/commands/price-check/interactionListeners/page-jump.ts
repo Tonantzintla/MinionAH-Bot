@@ -1,8 +1,12 @@
 import { client } from "$src/discord/client";
+import genericErrorContainer from "$src/shared/displayContainers/genericErrorContainer";
 import checkMaintenanceMode from "$src/shared/utils/checkMaintenanceMode";
 import { MessageFlags } from "discord.js";
 import PriceCheckSequence from "../utils/PriceCheckSequence";
 
+/**
+ * handles the page jump modal submission for the price-check command.
+ */
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isModalSubmit()) return;
   if (!interaction.customId.startsWith("price-check:page:jump")) return;
@@ -23,5 +27,9 @@ client.on("interactionCreate", async (interaction) => {
     });
   } catch (error) {
     console.error("Error handling page jump interaction:", error);
+    await interaction.reply({
+      components: [genericErrorContainer],
+      flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2]
+    });
   }
 });
