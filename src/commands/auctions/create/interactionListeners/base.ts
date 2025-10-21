@@ -6,6 +6,12 @@ import { MessageFlags, PrimaryEntryPointCommandInteraction } from "discord.js";
 import AuctionCreator from "../util/AuctionCreator";
 import { invalidAuctionCreateDisplayContainer } from "../util/staticComponents";
 
+
+/**
+ * Base listener of the auction create command. Verifies that the user
+ * has a linked MinionAH account and initializes the AuctionCreator
+ * to generate the confirmation display container.
+ */
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
   if (interaction instanceof PrimaryEntryPointCommandInteraction) return;

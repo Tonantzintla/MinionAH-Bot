@@ -17,6 +17,13 @@ export default new SlashCommandSubcommandBuilder()
   .setName("myauctions")
   .setDescription("List your auctions");
 
+
+/**
+ * Master (only) listener of the myauctions subcommand. Auction listings can
+ * be handled by SearchSequence extensions using custom auction getters.
+ * This listener verifies that the user has a linked MinionAH account
+ * and initializes a SearchSequence to display their auctions.
+ */
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
   if (interaction instanceof PrimaryEntryPointCommandInteraction) return;

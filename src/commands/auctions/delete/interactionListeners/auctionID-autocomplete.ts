@@ -5,6 +5,11 @@ import { kv, prisma } from "$src/central.config";
 import { client } from "$src/discord/client";
 import getLinkedMinionAHUser from "$src/shared/user/getLinkedMinionAHUser";
 
+
+/**
+ * Handles the autocomplete interaction for the auction ID
+ * option in the auctions delete command, option `auction
+ */
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isAutocomplete()) return;
   if (interaction.commandName !== "auctions") return;

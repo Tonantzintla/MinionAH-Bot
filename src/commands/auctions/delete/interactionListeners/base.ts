@@ -7,6 +7,13 @@ import getLinkedMinionAHUser from "$src/shared/user/getLinkedMinionAHUser";
 import { MessageFlags, PrimaryEntryPointCommandInteraction } from "discord.js";
 import auctionsDeleteComponents from "../util/auctionsDeleteComponents";
 
+
+/**
+ * Base listener of the auction delete command. Verifies that the user
+ * has a linked MinionAH account and that the specified auction
+ * exists and belongs to them. If so, generates a confirmation
+ * display container for deletion.
+ */
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
   if (interaction instanceof PrimaryEntryPointCommandInteraction) return;

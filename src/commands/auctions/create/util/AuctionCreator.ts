@@ -64,6 +64,12 @@ export default class AuctionCreator {
     AuctionCreator.auctionCreators.delete(username);
   }
 
+  /**
+   * Finalizes the auction creation process and saves the auction to the database.
+   * Although checked by the base listener, we re-validate the existence of the linked MinionAH user
+   * since we use it anyway here.
+   * @param username 
+   */
   public static async confirmCreation(username: string) {
     const creator = AuctionCreator.auctionCreators.get(username);
     if (!creator) {
@@ -102,6 +108,11 @@ export default class AuctionCreator {
     });
   }
 
+  /**
+   * Generates the confirmation display container for the auction creation process.
+   * The container includes all the auction details and confirm/cancel buttons.
+   * @returns 
+   */
   public async getConfirmationDisplayContainer() {
     const minionData = await prisma.minion.findFirst({
       where: {
