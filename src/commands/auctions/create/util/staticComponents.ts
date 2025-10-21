@@ -16,7 +16,7 @@ const invalidAuctionCreateDisplayContainer = new ContainerBuilder()
   )
   .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large))
   .addTextDisplayComponents((t) =>
-    t.setContent(`*By [minionah.com](https://minionah.com).`)
+    t.setContent(`*By [minionah.com](https://minionah.com).*`)
   );
 
 
@@ -32,7 +32,7 @@ const confirmedAuctionCreationDisplayContainer = new ContainerBuilder()
   )
   .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large))
   .addTextDisplayComponents((t) =>
-    t.setContent(`*By [minionah.com](https://minionah.com).`)
+    t.setContent(`*By [minionah.com](https://minionah.com).*`)
   );
 
 const cancelledAuctionCreationDisplayContainer = new ContainerBuilder()
@@ -46,7 +46,7 @@ const cancelledAuctionCreationDisplayContainer = new ContainerBuilder()
   )
   .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large))
   .addTextDisplayComponents((t) =>
-    t.setContent(`*By [minionah.com](https://minionah.com).`)
+    t.setContent(`*By [minionah.com](https://minionah.com).*`)
   );
 
 export {

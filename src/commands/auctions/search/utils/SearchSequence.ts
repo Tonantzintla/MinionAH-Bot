@@ -105,7 +105,7 @@ export default class SearchSequence {
       minionTier: this.minionTier,
       sortingOrder: this.sortingOrder
     });
-    console.log(this.title);
+
     return {
       auctionData,
       visualContainer: await constructAuctionPageDisplayContainer({

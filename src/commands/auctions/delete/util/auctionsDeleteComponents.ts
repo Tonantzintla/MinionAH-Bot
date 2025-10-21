@@ -15,7 +15,7 @@ const auctionNotFoundDisplayContainer = new ContainerBuilder()
         )
     )
     .addTextDisplayComponents((t) =>
-        t.setContent(`*By [minionah.com](https://minionah.com).`)
+        t.setContent(`*By [minionah.com](https://minionah.com).*`)
     );
 
 const auctionDeletionSuccessDisplayContainer = new ContainerBuilder()
@@ -29,7 +29,7 @@ const auctionDeletionSuccessDisplayContainer = new ContainerBuilder()
     )
     .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large))
     .addTextDisplayComponents((t) =>
-        t.setContent(`*By [minionah.com](https://minionah.com).`)
+        t.setContent(`*By [minionah.com](https://minionah.com).*`)
     );
 
 const auctionDeletionCancelledDisplayContainer = new ContainerBuilder()
@@ -43,7 +43,7 @@ const auctionDeletionCancelledDisplayContainer = new ContainerBuilder()
     )
     .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large))
     .addTextDisplayComponents((t) =>
-        t.setContent(`*By [minionah.com](https://minionah.com).`)
+        t.setContent(`*By [minionah.com](https://minionah.com).*`)
     );
 
 const pendingDeletionExpiredDisplayContainer = new ContainerBuilder()
@@ -57,7 +57,7 @@ const pendingDeletionExpiredDisplayContainer = new ContainerBuilder()
     )
     .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large))
     .addTextDisplayComponents((t) =>
-        t.setContent(`*By [minionah.com](https://minionah.com).`)
+        t.setContent(`*By [minionah.com](https://minionah.com).*`)
     );
 
 async function constructAuctionDeleteConfirmationDisplayContainer(auction: Auction) {
