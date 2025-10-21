@@ -17,6 +17,15 @@ const searchConfig = {
     auctionsPerPage: 5,
 }
 
+/**
+ * This class handles auction searching for a specific user. It maintains state and
+ * provides pagination. The ability to have switchable auction getters allows the reuse
+ * of the class in different auction searching contexts (generic (/auctions search), user-specific (/auctions list) etc)
+ * 
+ * notes:
+ * - intermediate constructor: getSequence (calls private constructor)
+ * - object scope: user
+ */
 export default class SearchSequence {
     private static instances: Map<string, SearchSequence> = new Map();
     private minionType?: string;
