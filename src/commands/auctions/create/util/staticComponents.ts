@@ -3,7 +3,6 @@ import { ContainerBuilder, SeparatorSpacingSize } from "discord.js";
 /**
  * Various display containers used in the auction creation process. Specifically:
  * - invalidAuctionCreateDisplayContainer: Shown when the auction creation options are invalid.
- * - noLinkedMinionAHAccountFoundDisplayContainer: Shown when the user has no linked MinionAH account.
  * - confirmedAuctionCreationDisplayContainer: Shown when the auction creation is successfully confirmed.
  * - cancelledAuctionCreationDisplayContainer: Shown when the auction creation process is cancelled.
  */
@@ -20,19 +19,7 @@ const invalidAuctionCreateDisplayContainer = new ContainerBuilder()
     t.setContent(`*By [minionah.com](https://minionah.com).`)
   );
 
-const noLinkedMinionAHAccountFoundDisplayContainer = new ContainerBuilder()
-  .addTextDisplayComponents((t) =>
-    t.setContent("### No Linked MinionAH Account Found")
-  )
-  .addTextDisplayComponents((t) =>
-    t.setContent(
-      "You do not have a linked MinionAH account. Please link your account [here](https://minionah.com/profile/settings) to create auctions via the bot."
-    )
-  )
-  .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large))
-  .addTextDisplayComponents((t) =>
-    t.setContent(`*By [minionah.com](https://minionah.com).`)
-  );
+
 
 const confirmedAuctionCreationDisplayContainer = new ContainerBuilder()
   .addTextDisplayComponents((t) =>
@@ -65,6 +52,5 @@ const cancelledAuctionCreationDisplayContainer = new ContainerBuilder()
 export {
   cancelledAuctionCreationDisplayContainer,
   confirmedAuctionCreationDisplayContainer,
-  invalidAuctionCreateDisplayContainer,
-  noLinkedMinionAHAccountFoundDisplayContainer
+  invalidAuctionCreateDisplayContainer
 };

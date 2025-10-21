@@ -1,6 +1,7 @@
 import getSubcommand from "$lib/getSubcommand";
 import { client } from "$src/discord/client";
 import genericErrorContainer from "$src/shared/displayContainers/genericErrorContainer";
+import noLinkedMinionAHAccountFoundDisplayContainer from "$src/shared/displayContainers/noLinkedMinionAHAccountFoundDisplayContainer";
 import getLinkedMinionAHUser from "$src/shared/user/getLinkedMinionAHUser";
 import checkMaintenanceMode from "$src/shared/utils/checkMaintenanceMode";
 import {
@@ -8,7 +9,6 @@ import {
   PrimaryEntryPointCommandInteraction,
   SlashCommandSubcommandBuilder
 } from "discord.js";
-import { noLinkedMinionAHAccountFoundDisplayContainer } from "../create/util/staticComponents";
 import applyValueCollectorToSortingOrderSelector from "../search/utils/applyValueCollectorToSortingOrderSelector";
 import SearchSequence from "../search/utils/SearchSequence";
 import getMyAuctionsConstructor from "./util/getMyAuctionsConstructor";

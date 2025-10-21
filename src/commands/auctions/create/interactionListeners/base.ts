@@ -1,11 +1,11 @@
 import getSubcommand from "$lib/getSubcommand";
 import { client } from "$src/discord/client";
+import noLinkedMinionAHAccountFoundDisplayContainer from "$src/shared/displayContainers/noLinkedMinionAHAccountFoundDisplayContainer";
 import getLinkedMinionAHUser from "$src/shared/user/getLinkedMinionAHUser";
 import { MessageFlags, PrimaryEntryPointCommandInteraction } from "discord.js";
 import AuctionCreator from "../util/AuctionCreator";
 import {
-  invalidAuctionCreateDisplayContainer,
-  noLinkedMinionAHAccountFoundDisplayContainer
+  invalidAuctionCreateDisplayContainer
 } from "../util/staticComponents";
 
 client.on("interactionCreate", async (interaction) => {
