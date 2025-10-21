@@ -4,7 +4,7 @@ export default new ContainerBuilder()
   .addTextDisplayComponents((t) => t.setContent("### An Error Occurred"))
   .addTextDisplayComponents((t) =>
     t.setContent(
-      "Sorry, something went wrong while processing your request. Please contact @andriotis and tell him to deal with the mess"
+      "Sorry, something went wrong while processing your request. Please report this error to the MinionAH Developers."
     )
   )
   .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large))
