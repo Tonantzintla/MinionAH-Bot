@@ -19,8 +19,6 @@ const invalidAuctionCreateDisplayContainer = new ContainerBuilder()
     t.setContent(`*By [minionah.com](https://minionah.com).*`)
   );
 
-
-
 const confirmedAuctionCreationDisplayContainer = new ContainerBuilder()
   .addTextDisplayComponents((t) =>
     t.setContent("### ✅ Auction Creation Confirmed")

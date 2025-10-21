@@ -18,15 +18,17 @@ export default new SlashCommandSubcommandBuilder()
   .setDescription("Link your Discord account with your MinionAH account");
 
 const userAlreadyLinkedContainer = new ContainerBuilder()
-  .addTextDisplayComponents(
-    t => t.setContent("### ⚠️ Discord Account Already Linked"),
+  .addTextDisplayComponents((t) =>
+    t.setContent("### ⚠️ Discord Account Already Linked")
   )
-  .addSeparatorComponents(s => s.setSpacing(SeparatorSpacingSize.Large))
-  .addTextDisplayComponents(
-    t => t.setContent("Your Discord account is already linked to a MinionAH account. If you wish to link a different account, please unlink your current account first using the `/discord unlink` command or visit your account settings on MinionAH.com.")
+  .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large))
+  .addTextDisplayComponents((t) =>
+    t.setContent(
+      "Your Discord account is already linked to a MinionAH account. If you wish to link a different account, please unlink your current account first using the `/discord unlink` command or visit your account settings on MinionAH.com."
+    )
   )
-  .addActionRowComponents(
-    r => r.addComponents(
+  .addActionRowComponents((r) =>
+    r.addComponents(
       new ButtonBuilder()
         .setLabel("Go to Account Settings")
         .setStyle(ButtonStyle.Link)
@@ -54,15 +56,17 @@ client.on("interactionCreate", async (interaction) => {
       return;
     }
     const container = new ContainerBuilder()
-      .addTextDisplayComponents(
-        t => t.setContent("### ✅ Link your Discord account to MinionAH"),
+      .addTextDisplayComponents((t) =>
+        t.setContent("### ✅ Link your Discord account to MinionAH")
       )
-      .addSeparatorComponents(s => s.setSpacing(SeparatorSpacingSize.Large))
-      .addTextDisplayComponents(
-        t => t.setContent("To link your Discord account to MinionAH, click the button below. You will be redirected to your account page on MinionAH.com")
+      .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large))
+      .addTextDisplayComponents((t) =>
+        t.setContent(
+          "To link your Discord account to MinionAH, click the button below. You will be redirected to your account page on MinionAH.com"
+        )
       )
-      .addActionRowComponents(
-        r => r.addComponents(
+      .addActionRowComponents((r) =>
+        r.addComponents(
           new ButtonBuilder()
             .setLabel("Link Discord Account")
             .setStyle(ButtonStyle.Link)

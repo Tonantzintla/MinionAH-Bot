@@ -4,9 +4,7 @@ import noLinkedMinionAHAccountFoundDisplayContainer from "$src/shared/displayCon
 import getLinkedMinionAHUser from "$src/shared/user/getLinkedMinionAHUser";
 import { MessageFlags, PrimaryEntryPointCommandInteraction } from "discord.js";
 import AuctionCreator from "../util/AuctionCreator";
-import {
-  invalidAuctionCreateDisplayContainer
-} from "../util/staticComponents";
+import { invalidAuctionCreateDisplayContainer } from "../util/staticComponents";
 
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;

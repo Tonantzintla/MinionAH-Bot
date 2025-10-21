@@ -16,12 +16,14 @@ export default new SlashCommandSubcommandBuilder()
   .setDescription("Unlink your Discord account from your MinionAH account");
 
 const unlinkSuccessContainer = new ContainerBuilder()
-  .addTextDisplayComponents(
-    t => t.setContent("### ✅ Discord account unlinked from MinionAH"),
+  .addTextDisplayComponents((t) =>
+    t.setContent("### ✅ Discord account unlinked from MinionAH")
   )
-  .addSeparatorComponents(s => s.setSpacing(SeparatorSpacingSize.Large))
-  .addTextDisplayComponents(
-    t => t.setContent("Your Discord account has been successfully unlinked from your MinionAH account. If you wish to link it again in the future, you can use the `/discord link` command.")
+  .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large))
+  .addTextDisplayComponents((t) =>
+    t.setContent(
+      "Your Discord account has been successfully unlinked from your MinionAH account. If you wish to link it again in the future, you can use the `/discord link` command."
+    )
   );
 
 client.on("interactionCreate", async (interaction) => {
