@@ -1,8 +1,10 @@
 import e from "express";
-import notifications from "./routes/notifications/_notifications.js";
+import health from "./health.js";
+import notifications from "./routes/notifications/notifications-router.js";
 
 const rootRouter = e.Router();
 
 rootRouter.use("/notifications", notifications);
+rootRouter.get("/health", health);
 
 export default rootRouter;

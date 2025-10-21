@@ -1,6 +1,12 @@
 import { setMaintenanceMode } from "$src/central.config";
 import { client } from "$src/discord/client";
-import { SlashCommandBuilder } from "discord.js";
+import genericErrorContainer from "$src/shared/displayContainers/genericErrorContainer";
+import unauthorizedCommandContainer from "$src/shared/displayContainers/unauthorizedCommandContainer";
+import {
+  MessageFlags,
+  PrimaryEntryPointCommandInteraction,
+  SlashCommandBuilder
+} from "discord.js";
 
 export default new SlashCommandBuilder()
   .setName("maintenance")
@@ -16,31 +22,21 @@ export default new SlashCommandBuilder()
 
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
+  if (interaction instanceof PrimaryEntryPointCommandInteraction) return;
   if (interaction.commandName !== "maintenance") return;
+
   if (interaction.user.id !== process.env.ADMIN_ID) {
-    console.log(
-      "ADMIN ID MISMATCH:",
-      interaction.user.id,
-      process.env.ADMIN_ID
-    );
     return await interaction.reply({
-      content: "You are not authorized to use this command",
-      ephemeral: true
+      components: [unauthorizedCommandContainer],
+      flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral]
     });
   }
   try {
-    if (interaction.options.get("enable")?.value === null) {
-      await interaction.reply({
-        content: "Please specify whether to enable or disable maintenance mode",
-        ephemeral: true
-      });
-      return;
-    }
-    const enable = interaction.options.get("enable")?.value as boolean;
+    const enable = interaction.options.get("enable", true)?.value as boolean;
     if (enable) {
       await interaction.reply({
         content: "Maintenance mode enabled",
-        ephemeral: true
+        flags: [MessageFlags.Ephemeral]
       });
       client.user?.setPresence({
         activities: [{ name: "MinionAH is in maintenance mode" }],
@@ -49,7 +45,7 @@ client.on("interactionCreate", async (interaction) => {
     } else {
       await interaction.reply({
         content: "Maintenance mode disabled",
-        ephemeral: true
+        flags: [MessageFlags.Ephemeral]
       });
       client.user?.setPresence({
         activities: [
@@ -64,8 +60,8 @@ client.on("interactionCreate", async (interaction) => {
   } catch (error) {
     console.error(error);
     await interaction.reply({
-      content: "There was an error while executing this command!",
-      ephemeral: true
+      components: [genericErrorContainer],
+      flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2]
     });
   }
 });

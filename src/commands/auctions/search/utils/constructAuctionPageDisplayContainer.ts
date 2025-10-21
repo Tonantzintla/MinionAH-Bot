@@ -17,6 +17,7 @@ type AuctionDisplayParams = Awaited<ReturnType<typeof getAuctionData>> & {
   page: number;
   pageSize: number;
   currentSortingOrder?: "asc" | "desc";
+  title: string;
 };
 
 export default async function constructAuctionPageDisplayContainer({
@@ -25,7 +26,8 @@ export default async function constructAuctionPageDisplayContainer({
   minionSum,
   page,
   pageSize,
-  currentSortingOrder
+  currentSortingOrder,
+  title
 }: AuctionDisplayParams) {
   const botEmojis = await client.application?.emojis.fetch();
 
@@ -33,7 +35,7 @@ export default async function constructAuctionPageDisplayContainer({
 
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
-      (t) => t.setContent("### Auction Search"),
+      (t) => t.setContent(`### ${title || "Auction Search"}`),
       (t) =>
         t.setContent(
           [
@@ -56,12 +58,13 @@ export default async function constructAuctionPageDisplayContainer({
         `*By [minionah.com](https://minionah.com). Showing page ${page} of ${Math.ceil(auctionCount / pageSize)}*`
       )
     )
+    .addActionRowComponents(constructSortingOrderSelect(currentSortingOrder))
     .addActionRowComponents(
-      constructSortingOrderSelect(currentSortingOrder)
-    )
-    .addActionRowComponents(
-      constructPagination({ currentPage: page, totalPages: Math.ceil(auctionCount / pageSize) })
-    )
+      constructPagination({
+        currentPage: page,
+        totalPages: Math.ceil(auctionCount / pageSize)
+      })
+    );
   return container;
 }
 

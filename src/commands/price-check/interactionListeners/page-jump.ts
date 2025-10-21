@@ -1,31 +1,35 @@
 import { client } from "$src/discord/client";
+import genericErrorContainer from "$src/shared/displayContainers/genericErrorContainer";
 import checkMaintenanceMode from "$src/shared/utils/checkMaintenanceMode";
 import { MessageFlags } from "discord.js";
-import SearchSequence from "../utils/SearchSequence";
-import applyValueCollectorToSortingOrderSelector from "../utils/applyValueCollectorToSortingOrderSelector";
+import PriceCheckSequence from "../utils/PriceCheckSequence";
 
 /**
- * Processes the input from the page jump modal and navigates to the specified page.
+ * handles the page jump modal submission for the price-check command.
  */
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isModalSubmit()) return;
-  if (!interaction.customId.startsWith("auctions:search:page:jump")) return;
+  if (!interaction.customId.startsWith("price-check:page:jump")) return;
   try {
     if (await checkMaintenanceMode(interaction)) return;
     const pageInput = interaction.fields.getTextInputValue(
-      "auctions:search:page:jump-input"
+      "price-check:page:jump-input"
     );
     const pageNumber = parseInt(pageInput);
-    const searchSequence = SearchSequence.getSequence({
+    const priceCheckSequence = PriceCheckSequence.getSequence({
       username: interaction.user.username
     });
-    const { visualContainer } = await searchSequence.navigateToPage(pageNumber);
-    const reply = await interaction.reply({
+    const { visualContainer } =
+      await priceCheckSequence.navigateToPage(pageNumber);
+    await interaction.reply({
       components: [visualContainer],
       flags: [MessageFlags.IsComponentsV2]
     });
-    applyValueCollectorToSortingOrderSelector(reply);
   } catch (error) {
     console.error("Error handling page jump interaction:", error);
+    await interaction.reply({
+      components: [genericErrorContainer],
+      flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2]
+    });
   }
 });
