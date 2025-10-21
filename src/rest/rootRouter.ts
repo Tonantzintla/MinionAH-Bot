@@ -1,6 +1,6 @@
 import e from "express";
 import health from "./health.js";
-import notifications from "./routes/notifications/_notifications.js";
+import notifications from "./routes/notifications/notifications-router.js";
 
 const rootRouter = e.Router();
 

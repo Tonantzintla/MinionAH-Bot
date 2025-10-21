@@ -21,6 +21,21 @@ export default async (req: e.Request, res: e.Response) => {
 
     const dmChannel = await getDMChannel(data.receiverDiscordID);
 
+    // const container = new ContainerBuilder()
+    //   .addSectionComponents(s => s.setThumbnailAccessory(
+    //     new ThumbnailBuilder()
+    //       .setURL(`${process.env.CLOUDINARY_URL}/image/upload/v1/users/avatars/${data.senderID}`)
+    //   ))
+    //   .addTextDisplayComponents(t => t.setContent("### You have a new message"))
+    //   .addSeparatorComponents(s => s.setSpacing(SeparatorSpacingSize.Large))
+    //   .addTextDisplayComponents(t => t.setContent(
+    //     `Hello <@${data.receiverDiscordID}>,\n\n**${data.senderUsername}** has sent you a message`
+    //   ))
+    //   .addSeparatorComponents(s => s.setSpacing(SeparatorSpacingSize.Large))
+    //   .addTextDisplayComponents(t => t.setContent(
+    //     `*By [minionah.com](https://minionah.com).*`
+    //   ));
+
     await dmChannel.send({
       embeds: [msgEmbed],
       components: [btnRow]
