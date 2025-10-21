@@ -35,11 +35,11 @@ export default function getMyAuctionsConstructor(userID: string) {
         // check for both minion type and tier
         ...(minionType && minionTier
           ? {
-              minion_id: {
-                contains: minionType.toUpperCase(),
-                endsWith: "\\_" + minionTier
-              }
+            minion_id: {
+              contains: minionType.toUpperCase(),
+              endsWith: "\\_" + minionTier
             }
+          }
           : {}),
         user_id: userID
       },
@@ -65,12 +65,13 @@ export default function getMyAuctionsConstructor(userID: string) {
         // check for both minion type and tier
         ...(minionType && minionTier
           ? {
-              minion_id: {
-                contains: minionType.toUpperCase(),
-                endsWith: "\\_" + minionTier
-              }
+            minion_id: {
+              contains: minionType.toUpperCase(),
+              endsWith: "\\_" + minionTier
             }
-          : {})
+          }
+          : {}),
+        user_id: userID
       }
     });
 

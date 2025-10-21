@@ -5,6 +5,7 @@ interface SequenceConstructorParams {
   minionType?: string;
   minionTier?: number;
   overrideDefaultAuctionGetter?: typeof getAuctionData;
+  customTitle?: string;
 }
 
 interface SequenceGetParams extends SequenceConstructorParams {
@@ -32,16 +33,19 @@ export default class SearchSequence {
   public currentPageNumber: number = 1;
   private sortingOrder: "asc" | "desc" | undefined = "desc";
   private auctionGetter: typeof getAuctionData = getAuctionData;
+  private title = "Auction Search";
 
   private constructor({
     minionType,
     minionTier,
-    overrideDefaultAuctionGetter
+    overrideDefaultAuctionGetter,
+    customTitle
   }: SequenceConstructorParams) {
     this.minionType = minionType;
     this.minionTier = minionTier;
     if (overrideDefaultAuctionGetter)
       this.auctionGetter = overrideDefaultAuctionGetter;
+    if (customTitle) this.title = customTitle;
   }
 
   public static getSequence({
@@ -49,7 +53,8 @@ export default class SearchSequence {
     minionType,
     minionTier,
     explicitlyCreate = false,
-    overrideDefaultAuctionGetter
+    overrideDefaultAuctionGetter,
+    customTitle
   }: SequenceGetParams) {
     const existingInstance = this.instances.get(username);
     if (existingInstance && !explicitlyCreate) {
@@ -58,7 +63,8 @@ export default class SearchSequence {
       const newInstance = new SearchSequence({
         minionType,
         minionTier,
-        overrideDefaultAuctionGetter
+        overrideDefaultAuctionGetter,
+        customTitle
       });
       this.instances.set(username, newInstance);
       return newInstance;
@@ -99,14 +105,15 @@ export default class SearchSequence {
       minionTier: this.minionTier,
       sortingOrder: this.sortingOrder
     });
-
+    console.log(this.title);
     return {
       auctionData,
       visualContainer: await constructAuctionPageDisplayContainer({
         ...auctionData,
         page: this.currentPageNumber,
         pageSize: searchConfig.auctionsPerPage,
-        currentSortingOrder: this.sortingOrder
+        currentSortingOrder: this.sortingOrder,
+        title: this.title
       })
     };
   }

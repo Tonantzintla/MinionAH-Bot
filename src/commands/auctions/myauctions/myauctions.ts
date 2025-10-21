@@ -14,14 +14,14 @@ import SearchSequence from "../search/utils/SearchSequence";
 import getMyAuctionsConstructor from "./util/getMyAuctionsConstructor";
 
 export default new SlashCommandSubcommandBuilder()
-  .setName("list")
+  .setName("myauctions")
   .setDescription("List your auctions");
 
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
   if (interaction instanceof PrimaryEntryPointCommandInteraction) return;
   if (interaction.commandName !== "auctions") return;
-  if (getSubcommand(interaction) !== "list") return;
+  if (getSubcommand(interaction) !== "myauctions") return;
 
   try {
     if (await checkMaintenanceMode(interaction)) return;
@@ -36,6 +36,7 @@ client.on("interactionCreate", async (interaction) => {
     const searchSequence = SearchSequence.getSequence({
       username: interaction.user.username,
       explicitlyCreate: true,
+      customTitle: `${linkedUser.user.username}'s Auctions`,
       overrideDefaultAuctionGetter: getMyAuctionsConstructor(linkedUser.user.id)
     });
 
