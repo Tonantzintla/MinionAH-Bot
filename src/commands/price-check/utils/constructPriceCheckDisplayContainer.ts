@@ -15,12 +15,19 @@ export default async function constructPriceCheckDisplayContainer({
   pageSize: number;
 }) {
   if (!priceData) throw new Error("No price data available.");
+  const botEmojis = await client.application?.emojis.fetch();
+  if (!botEmojis) throw new Error("Bot emojis not found");
   const pageItems = priceData.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-  const botEmojis = await client.application?.emojis.fetch();
-  if (!botEmojis) throw new Error("Bot emojis not found");
+  const pageItemsContentTransformed = pageItems
+    .map(
+      (minion) =>
+        `${resolveMinionEmoji(minion.id, botEmojis)} ${minion.name} ~ \`${formatMinionPrice(minion.craftCost)}\``
+    )
+    .join("\n");
+
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
       (t) => t.setContent("### Minion Prices"),
@@ -32,12 +39,9 @@ export default async function constructPriceCheckDisplayContainer({
     .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large))
     .addTextDisplayComponents((t) =>
       t.setContent(
-        pageItems
-          .map(
-            (minion) =>
-              `${resolveMinionEmoji(minion.id, botEmojis)} ${minion.name} ~ \`${formatMinionPrice(minion.craftCost)}\``
-          )
-          .join("\n")
+        pageItemsContentTransformed.length > 0
+          ? pageItemsContentTransformed
+          : "No minion data available on this page."
       )
     )
     .addSeparatorComponents((s) => s.setSpacing(SeparatorSpacingSize.Large))
