@@ -1,4 +1,3 @@
-import authMiddleware from "$rest/middleware/auth.js";
 import rootRouter from "$rest/rootRouter.js";
 import express from "express";
 // import cron from "node-cron";
@@ -12,7 +11,6 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(authMiddleware);
 
 app.use(rootRouter);
 
