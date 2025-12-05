@@ -1,4 +1,5 @@
 import e from "express";
+import { ZodSchema } from "zod";
 
 /**
  * constructs middleware for a route,
@@ -7,7 +8,7 @@ import e from "express";
  * @returns void - it accepts the request if it matches the schema,
  * otherwise it returns a 400 Bad Request response
  */
-export default function zodMW(schema: Zod.Schema<unknown>) {
+export default function zodMW(schema: ZodSchema<unknown>) {
   return async (req: e.Request, res: e.Response, next: e.NextFunction) => {
     try {
       const data = schema.parse(req.body);
